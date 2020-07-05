@@ -1,0 +1,1 @@
+This contains the board game *Lines of Action* developed for the iOS App Store
