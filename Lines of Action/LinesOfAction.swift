@@ -12,64 +12,45 @@ struct LinesOfAction {
     // MARK: - Stored and Computed Variables
     
     let boardSize: Int
-    
-    private(set) var board: [Square]
-    
+
+    private(set) var pieces: [Piece]
+
     // MARK: - Initializers
     
     init(boardSize: Int = 8) {
         self.boardSize = boardSize
-        board = LinesOfAction.createBoard(size: boardSize)
+        pieces = LinesOfAction.createGame(size: boardSize)
     }
     
     // MARK: - Type and Instance Methods
     
-    static private func createBoard(size: Int) -> [Square] {
-        var squares: [Square] = []
+    static private func createGame(size: Int) -> [Piece] {
+        var pieces: [Piece] = []
         
-        // top and bottom rows
+        for row in [0, size - 1] {
+            for col in 1..<size-1 {
+                pieces.append(Piece(x: col, y: row, player: .player))
+            }
+        }
+        
         for row in 1..<size-1 {
-            for col in 1..<size-1 { // empty squares
-                squares.append(Square(x: row, y: col))
-            }
-            for col in [0, size-1] { // pieces
-                squares.append(Square(x: row, y: col, player: .player))
+            for col in [0, size - 1] {
+                pieces.append(Piece(x: col, y: row, player: .opponent))
             }
         }
         
-        // middle rows
-        for row in [0, size-1] {
-            for col in [0, size-1] { // empty squares
-                squares.append(Square(x: row, y: col))
-            }
-            for col in 1..<size-1 { // pieces
-                squares.append(Square(x: row, y: col, player: .opponent))
-            }
-        }
-        
-        return squares.sorted {
-            if $0.y < $1.y {
-                return true
-            } else if $0.y == $1.y && $0.x < $1.x {
-                return true
-            }
-            return false
-        }
-    }
-    
-    func squareAt(_ x: Int, _ y: Int) -> Square {
-        board[x * boardSize + y]
+        return pieces
     }
         
     // MARK: - Structs and Enumerations
     
-    struct Square: Hashable {
+    struct Piece: Hashable {
         let x: Int
         let y: Int
-        var player: Player?
+        var player: Player
     }
     
-    enum Player {
+    enum Player: String {
         case player, opponent
     }
 }
