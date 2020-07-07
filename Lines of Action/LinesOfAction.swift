@@ -41,13 +41,31 @@ struct LinesOfAction {
         
         return pieces
     }
+    
+    func pieceAt(_ x: Int, _ y: Int) -> Piece? {
+        for piece in pieces {
+            if piece.x == x && piece.y == y {
+                return piece
+            }
+        }
+        
+        return nil
+    }
+    
+    mutating func select(_ piece: Piece) {
+        if let piece = pieces.firstIndex(matching: piece) {
+            pieces[piece].isSelected = !pieces[piece].isSelected
+        }
+    }
         
     // MARK: - Structs and Enumerations
     
-    struct Piece: Hashable {
+    struct Piece: Identifiable, Hashable {
         let x: Int
         let y: Int
         var player: Player
+        var isSelected = false
+        var id = UUID()
     }
     
     enum Player: String {
