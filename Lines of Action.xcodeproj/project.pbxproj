@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		450C17D424B7C89700391C2B /* Square.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C17D324B7C89700391C2B /* Square.swift */; };
+		450C17D624B7C8BC00391C2B /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C17D524B7C8BC00391C2B /* Piece.swift */; };
 		454DFD6224B3F91B00CDDA24 /* Array+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */; };
 		454DFD6424B4295C00CDDA24 /* Star.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454DFD6324B4295C00CDDA24 /* Star.swift */; };
 		45D8C9BC24B169E90014A197 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45D8C9BB24B169E90014A197 /* AppDelegate.swift */; };
@@ -17,9 +19,12 @@
 		45D8C9C824B169E90014A197 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 45D8C9C624B169E90014A197 /* LaunchScreen.storyboard */; };
 		45D8C9D024B16C3F0014A197 /* LinesOfAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45D8C9CF24B16C3F0014A197 /* LinesOfAction.swift */; };
 		45D8C9D224B16C9D0014A197 /* LinesOfActionGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45D8C9D124B16C9D0014A197 /* LinesOfActionGame.swift */; };
+		45E063CE24B521C0003A7D0A /* Array+Only.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E063CD24B521C0003A7D0A /* Array+Only.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		450C17D324B7C89700391C2B /* Square.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Square.swift; sourceTree = "<group>"; };
+		450C17D524B7C8BC00391C2B /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Identifiable.swift"; sourceTree = "<group>"; };
 		454DFD6324B4295C00CDDA24 /* Star.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Star.swift; sourceTree = "<group>"; };
 		45D8C9B824B169E90014A197 /* Lines of Action.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Lines of Action.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -32,6 +37,7 @@
 		45D8C9C924B169E90014A197 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		45D8C9CF24B16C3F0014A197 /* LinesOfAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesOfAction.swift; sourceTree = "<group>"; };
 		45D8C9D124B16C9D0014A197 /* LinesOfActionGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesOfActionGame.swift; sourceTree = "<group>"; };
+		45E063CD24B521C0003A7D0A /* Array+Only.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Only.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,9 +73,12 @@
 				45D8C9BB24B169E90014A197 /* AppDelegate.swift */,
 				45D8C9BD24B169E90014A197 /* SceneDelegate.swift */,
 				454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */,
+				45E063CD24B521C0003A7D0A /* Array+Only.swift */,
 				45D8C9CF24B16C3F0014A197 /* LinesOfAction.swift */,
 				45D8C9D124B16C9D0014A197 /* LinesOfActionGame.swift */,
 				45D8C9BF24B169E90014A197 /* LinesOfActionGameView.swift */,
+				450C17D524B7C8BC00391C2B /* Piece.swift */,
+				450C17D324B7C89700391C2B /* Square.swift */,
 				454DFD6324B4295C00CDDA24 /* Star.swift */,
 				45D8C9C124B169E90014A197 /* Assets.xcassets */,
 				45D8C9C624B169E90014A197 /* LaunchScreen.storyboard */,
@@ -160,11 +169,14 @@
 			files = (
 				45D8C9D024B16C3F0014A197 /* LinesOfAction.swift in Sources */,
 				45D8C9BC24B169E90014A197 /* AppDelegate.swift in Sources */,
+				450C17D624B7C8BC00391C2B /* Piece.swift in Sources */,
 				45D8C9BE24B169E90014A197 /* SceneDelegate.swift in Sources */,
 				454DFD6424B4295C00CDDA24 /* Star.swift in Sources */,
 				45D8C9D224B16C9D0014A197 /* LinesOfActionGame.swift in Sources */,
 				45D8C9C024B169E90014A197 /* LinesOfActionGameView.swift in Sources */,
+				450C17D424B7C89700391C2B /* Square.swift in Sources */,
 				454DFD6224B3F91B00CDDA24 /* Array+Identifiable.swift in Sources */,
+				45E063CE24B521C0003A7D0A /* Array+Only.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

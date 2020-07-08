@@ -21,8 +21,16 @@ class LinesOfActionGame: ObservableObject {
         model.pieces
     }
     
-    func pieceAt(_ x: Int, _ y: Int) -> LinesOfAction.Piece? {
+    func isSelected(x: Int, y: Int) -> Bool {
+        model.isSelected(x, y)
+    }
+    
+    func pieceAt(x: Int, y: Int) -> LinesOfAction.Piece? {
         model.pieceAt(x, y)
+    }
+    
+    func canMoveTo(x: Int, y: Int) -> Bool {
+        model.canMoveTo(x, y)
     }
     
     // MARK: - Intent(s)
