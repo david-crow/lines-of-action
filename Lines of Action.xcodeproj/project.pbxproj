@@ -51,6 +51,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		450C17D724B7C9B200391C2B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				45D8C9BF24B169E90014A197 /* LinesOfActionGameView.swift */,
+				450C17D524B7C8BC00391C2B /* Piece.swift */,
+				450C17D324B7C89700391C2B /* Square.swift */,
+				454DFD6324B4295C00CDDA24 /* Star.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		450C17D824B7C9CF00391C2B /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */,
+				45E063CD24B521C0003A7D0A /* Array+Only.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		45D8C9AF24B169E90014A197 = {
 			isa = PBXGroup;
 			children = (
@@ -72,14 +92,10 @@
 			children = (
 				45D8C9BB24B169E90014A197 /* AppDelegate.swift */,
 				45D8C9BD24B169E90014A197 /* SceneDelegate.swift */,
-				454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */,
-				45E063CD24B521C0003A7D0A /* Array+Only.swift */,
+				450C17D824B7C9CF00391C2B /* Extensions */,
+				450C17D724B7C9B200391C2B /* Views */,
 				45D8C9CF24B16C3F0014A197 /* LinesOfAction.swift */,
 				45D8C9D124B16C9D0014A197 /* LinesOfActionGame.swift */,
-				45D8C9BF24B169E90014A197 /* LinesOfActionGameView.swift */,
-				450C17D524B7C8BC00391C2B /* Piece.swift */,
-				450C17D324B7C89700391C2B /* Square.swift */,
-				454DFD6324B4295C00CDDA24 /* Star.swift */,
 				45D8C9C124B169E90014A197 /* Assets.xcassets */,
 				45D8C9C624B169E90014A197 /* LaunchScreen.storyboard */,
 				45D8C9C924B169E90014A197 /* Info.plist */,
