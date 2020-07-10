@@ -13,7 +13,7 @@ struct LinesOfAction {
     
     let boardSize: Int
     
-    private var squares: [Square]
+    private(set) var squares: [Square]
 
     private(set) var pieces: [Piece]
         
@@ -41,13 +41,13 @@ struct LinesOfAction {
         
         for row in [0, size - 1] {
             for col in 1 ..< size - 1 {
-                pieces.append(Piece(location: Square(col, row), player: .player))
+                pieces.append(Piece(player: .player, location: Square(col, row)))
             }
         }
         
         for row in 1 ..< size - 1 {
             for col in [0, size - 1] {
-                pieces.append(Piece(location: Square(col, row), player: .opponent))
+                pieces.append(Piece(player: .opponent, location: Square(col, row)))
             }
         }
         
@@ -80,13 +80,14 @@ struct LinesOfAction {
         if let index = selectedPieceIndex {
             let piece = pieces[index]
             let location = Square(x, y)
-            return canMove(piece, to: location) && validMove(piece, movingTo: location)
+            return canMove(piece, to: location)
         }
         return false
     }
     
     private func canMove(_ piece: Piece, to location: Square) -> Bool {
-        canMoveHorizontally(piece, to: location) || canMoveVertically(piece, to: location) || canMoveDiagonally(piece, to: location)
+        (canMoveHorizontally(piece, to: location) || canMoveVertically(piece, to: location) || canMoveDiagonally(piece, to: location))
+            && validMove(piece, movingTo: location)
     }
     
     private func canMoveHorizontally(_ piece: Piece, to location: Square) -> Bool {
@@ -180,6 +181,21 @@ struct LinesOfAction {
             selectedPieceIndex = piece.isSelected ? nil : index
         }
     }
+    
+    mutating func deselectAllPieces() {
+        selectedPieceIndex = nil
+    }
+    
+    mutating func moveTo(_ x: Int, _ y: Int) {
+        if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
+            if let capturedPiece = pieceAt(x, y), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
+                pieces.remove(at: capturedIndex)
+            }
+
+            pieces[selectedPieceIndex!].location = Square(x, y)
+            selectedPieceIndex = nil
+        }
+    }
         
     // MARK: - Structs and Enumerations
     
@@ -194,10 +210,10 @@ struct LinesOfAction {
     }
     
     struct Piece: Identifiable, Hashable {
-        let location: Square
-        let player: Player
-        var isSelected = false
         let id = UUID()
+        let player: Player
+        var location: Square
+        var isSelected = false
     }
     
     enum Player: String {

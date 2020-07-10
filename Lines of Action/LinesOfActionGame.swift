@@ -17,6 +17,10 @@ class LinesOfActionGame: ObservableObject {
         model.boardSize
     }
     
+    var squares: [LinesOfAction.Square] {
+        model.squares
+    }
+    
     var pieces: [LinesOfAction.Piece] {
         model.pieces
     }
@@ -35,7 +39,27 @@ class LinesOfActionGame: ObservableObject {
     
     // MARK: - Intent(s)
     
+    func selectSquare(x: Int, y: Int) {
+        if let tappedPiece = model.pieceAt(x, y) {
+            if model.selectedPieceIndex != nil && model.canMoveTo(x, y) {
+                model.moveTo(x, y)
+            } else {
+                model.select(tappedPiece)
+            }
+        } else if model.selectedPieceIndex != nil {
+            if model.canMoveTo(x, y) {
+                model.moveTo(x, y)
+            } else {
+                model.deselectAllPieces()
+            }
+        }
+    }
+    
     func select(_ piece: LinesOfAction.Piece) {
         model.select(piece)
+    }
+    
+    func moveTo(x: Int, y: Int) {
+        model.moveTo(x, y)
     }
 }

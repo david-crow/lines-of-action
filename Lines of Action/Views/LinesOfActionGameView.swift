@@ -37,23 +37,21 @@ struct Board: View {
                         ForEach(0..<self.viewModel.boardSize) { col in
                             Square(
                                 hasPiece: self.viewModel.pieceAt(x: col, y: row) != nil,
-                                color: self.color(for: LinesOfAction.Square(col, row)),
+                                color: self.colorForSquare(x: col, y: row),
                                 selected: self.viewModel.isSelected(x: col, y: row),
                                 highlighted: self.viewModel.canMoveTo(x: col, y: row),
                                 boardSize: self.viewModel.boardSize,
                                 size: size
                             )
-                                .environmentObject(self.viewModel)
+                                .onTapGesture { self.viewModel.selectSquare(x: col, y: row) }
                         }
                     }
                 }
             }
-            
+
             ForEach(viewModel.pieces, id: \.self) { piece in
                 Piece(piece, size: size, boardSize: self.viewModel.boardSize)
-                    .onTapGesture {
-                        self.viewModel.select(piece)
-                    }
+                    .allowsHitTesting(false)
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -62,8 +60,8 @@ struct Board: View {
     
     // MARK: - Drawing Constants
         
-    private func color(for square: LinesOfAction.Square) -> Color {
-        (square.x + square.y) % 2 == 0 ? Color(UIColor.systemGray) : Color(UIColor.systemGray2)
+    private func colorForSquare(x: Int, y: Int) -> Color {
+        (x + y) % 2 == 0 ? Color(UIColor.systemGray) : Color(UIColor.systemGray2)
     }
 }
 
