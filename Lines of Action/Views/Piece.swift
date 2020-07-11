@@ -20,6 +20,34 @@ struct Piece: View {
     }
     
     var body: some View {
+        PieceIcon(player: piece.player, maxDiameter: squareSize)
+            .offset(CGSize(width: xOffset, height: yOffset))
+    }
+    
+    // MARK: - Drawing Constants
+    
+    private var squareSize: CGFloat {
+        min(size.width, size.height) / CGFloat(boardSize)
+    }
+    
+    private var xOffset: CGFloat {
+        let centerline = 0.5 * (CGFloat(boardSize) - 1)
+        let colOffset = centerline - CGFloat(piece.location.x)
+        return -squareSize * colOffset
+    }
+    
+    private var yOffset: CGFloat {
+        let centerline = 0.5 * (CGFloat(boardSize) - 1)
+        let rowOffset = centerline - CGFloat(piece.location.y)
+        return -squareSize * rowOffset
+    }
+}
+
+struct PieceIcon: View {
+    let player: LinesOfAction.Player
+    let maxDiameter: CGFloat
+    
+    var body: some View {
         ZStack {
             Circle()
                 .fill(color)
@@ -34,17 +62,19 @@ struct Piece: View {
                 .fill(Color.white)
                 .frame(width: emblemPieceSize, height: emblemPieceSize)
         }
-        .offset(CGSize(width: xOffset, height: yOffset))
     }
     
-    // MARK: - Drawing Constants (Sizing)
+    // MARK: - Drawing Constants
     
-    private var diameter: CGFloat {
-        min(size.width, size.height) / CGFloat(boardSize)
+    private let numStarCorners = 5
+    private let starSmoothness: CGFloat = 0.45
+    
+    private var color: Color {
+        player == .player ? .red : .blue
     }
     
     private var outerPieceSize: CGFloat {
-        0.8 * diameter
+        0.8 * maxDiameter
     }
     
     private var middlePieceSize: CGFloat {
@@ -58,34 +88,4 @@ struct Piece: View {
     private var emblemPieceSize: CGFloat {
         0.7 * innerPieceSize
     }
-    
-    // MARK: - Drawing Constants (Positioning)
-    
-    private var xOffset: CGFloat {
-        let centerline = 0.5 * (CGFloat(boardSize) - 1)
-        let colOffset = centerline - CGFloat(piece.location.x)
-        return -diameter * colOffset
-    }
-    
-    private var yOffset: CGFloat {
-        let centerline = 0.5 * (CGFloat(boardSize) - 1)
-        let rowOffset = centerline - CGFloat(piece.location.y)
-        return -diameter * rowOffset
-    }
-    
-    // MARK: - Drawing Constants (Other)
-    
-    private let numStarCorners = 5
-    
-    private let starSmoothness: CGFloat = 0.45
-    
-    private var color: Color {
-        piece.player == .player ? .red : .blue
-    }
 }
-
-//struct Piece_Previews: PreviewProvider {
-//    static var previews: some View {
-//        Piece()
-//    }
-//}

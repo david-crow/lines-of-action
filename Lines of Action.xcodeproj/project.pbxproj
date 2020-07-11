@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		450787E324B9542400EDB0B7 /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450787E224B9542400EDB0B7 /* Board.swift */; };
+		450787E524B9544200EDB0B7 /* Placard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450787E424B9544200EDB0B7 /* Placard.swift */; };
 		450C17D424B7C89700391C2B /* Square.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C17D324B7C89700391C2B /* Square.swift */; };
 		450C17D624B7C8BC00391C2B /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C17D524B7C8BC00391C2B /* Piece.swift */; };
 		454DFD6224B3F91B00CDDA24 /* Array+Identifiable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */; };
@@ -23,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		450787E224B9542400EDB0B7 /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
+		450787E424B9544200EDB0B7 /* Placard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placard.swift; sourceTree = "<group>"; };
 		450C17D324B7C89700391C2B /* Square.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Square.swift; sourceTree = "<group>"; };
 		450C17D524B7C8BC00391C2B /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		454DFD6124B3F91B00CDDA24 /* Array+Identifiable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Identifiable.swift"; sourceTree = "<group>"; };
@@ -55,7 +59,9 @@
 			isa = PBXGroup;
 			children = (
 				45D8C9BF24B169E90014A197 /* LinesOfActionGameView.swift */,
+				450787E224B9542400EDB0B7 /* Board.swift */,
 				450C17D524B7C8BC00391C2B /* Piece.swift */,
+				450787E424B9544200EDB0B7 /* Placard.swift */,
 				450C17D324B7C89700391C2B /* Square.swift */,
 				454DFD6324B4295C00CDDA24 /* Star.swift */,
 			);
@@ -187,8 +193,10 @@
 				45D8C9BC24B169E90014A197 /* AppDelegate.swift in Sources */,
 				450C17D624B7C8BC00391C2B /* Piece.swift in Sources */,
 				45D8C9BE24B169E90014A197 /* SceneDelegate.swift in Sources */,
+				450787E324B9542400EDB0B7 /* Board.swift in Sources */,
 				454DFD6424B4295C00CDDA24 /* Star.swift in Sources */,
 				45D8C9D224B16C9D0014A197 /* LinesOfActionGame.swift in Sources */,
+				450787E524B9544200EDB0B7 /* Placard.swift in Sources */,
 				45D8C9C024B169E90014A197 /* LinesOfActionGameView.swift in Sources */,
 				450C17D424B7C89700391C2B /* Square.swift in Sources */,
 				454DFD6224B3F91B00CDDA24 /* Array+Identifiable.swift in Sources */,

@@ -13,10 +13,12 @@ struct LinesOfAction {
     
     let boardSize: Int
     
+    private(set) var activePlayer: Player = .player
+    
     private(set) var squares: [Square]
-
+    
     private(set) var pieces: [Piece]
-        
+    
     private(set) var selectedPieceIndex: Int? {
         get { pieces.indices.filter { pieces[$0].isSelected }.only }
         set {
@@ -194,6 +196,7 @@ struct LinesOfAction {
 
             pieces[selectedPieceIndex!].location = Square(x, y)
             selectedPieceIndex = nil
+            activePlayer = activePlayer == .player ? .opponent : .player
         }
     }
         

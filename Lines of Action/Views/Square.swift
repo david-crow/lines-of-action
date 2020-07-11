@@ -56,9 +56,3 @@ struct Square: View {
         tokenScale * min(size.width, size.height) / CGFloat(boardSize)
     }
 }
-
-//struct Square_Previews: PreviewProvider {
-//    static var previews: some View {
-//        Square()
-//    }
-//}

@@ -13,6 +13,10 @@ class LinesOfActionGame: ObservableObject {
     
     // MARK: - Access to the Model
     
+    var activePlayer: LinesOfAction.Player {
+        model.activePlayer
+    }
+    
     var boardSize: Int {
         model.boardSize
     }
@@ -43,7 +47,7 @@ class LinesOfActionGame: ObservableObject {
         if let tappedPiece = model.pieceAt(x, y) {
             if model.selectedPieceIndex != nil && model.canMoveTo(x, y) {
                 model.moveTo(x, y)
-            } else {
+            } else if model.activePlayer == tappedPiece.player {
                 model.select(tappedPiece)
             }
         } else if model.selectedPieceIndex != nil {
@@ -53,13 +57,5 @@ class LinesOfActionGame: ObservableObject {
                 model.deselectAllPieces()
             }
         }
-    }
-    
-    func select(_ piece: LinesOfAction.Piece) {
-        model.select(piece)
-    }
-    
-    func moveTo(x: Int, y: Int) {
-        model.moveTo(x, y)
     }
 }
