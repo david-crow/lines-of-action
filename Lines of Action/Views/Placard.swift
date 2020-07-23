@@ -21,12 +21,10 @@ struct Placard: View {
         HStack {
             if player == .player {
                 PieceIcon(player: player, maxDiameter: maxDiameter)
-            }
-            
-            Text(title).font(fontSize)
-            
-            if player == .opponent {
-                PieceIcon(player: player, maxDiameter: maxDiameter)
+                Text(title).font(fontSize)
+            } else {
+                Text(title).font(fontSize)
+                PieceIcon(player: .opponent, maxDiameter: maxDiameter)
             }
         }
         .padding()

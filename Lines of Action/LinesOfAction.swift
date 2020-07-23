@@ -9,9 +9,11 @@
 import Foundation
 
 struct LinesOfAction {
-    // MARK: - Stored and Computed Variables
+    // MARK: - Variables
     
     let boardSize: Int
+    
+    private(set) var winner: Player?
     
     private(set) var activePlayer: Player = .player
     
@@ -35,7 +37,7 @@ struct LinesOfAction {
         (pieces, squares) = LinesOfAction.createGame(size: boardSize)
     }
     
-    // MARK: - Type and Instance Methods
+    // MARK: - Type Methods
     
     static private func createGame(size: Int) -> ([Piece], [Square]) {
         var pieces: [Piece] = []
@@ -62,6 +64,8 @@ struct LinesOfAction {
         return (pieces, squares)
     }
     
+    // MARK: - Instance Methods
+    
     func isSelected(_ x: Int, _ y: Int) -> Bool {
         if let index = selectedPieceIndex {
             return pieces[index] == pieceAt(x, y)
@@ -86,6 +90,33 @@ struct LinesOfAction {
         }
         return false
     }
+    
+    // MARK: - Mutating Instance Methods
+    
+    mutating func select(_ piece: Piece) {
+        if let index = pieces.firstIndex(matching: piece) {
+            selectedPieceIndex = piece.isSelected ? nil : index
+        }
+    }
+    
+    mutating func deselectAllPieces() {
+        selectedPieceIndex = nil
+    }
+    
+    mutating func moveTo(_ x: Int, _ y: Int) {
+        if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
+            if let capturedPiece = pieceAt(x, y), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
+                pieces.remove(at: capturedIndex)
+            }
+
+            pieces[selectedPieceIndex!].location = Square(x, y)
+            selectedPieceIndex = nil
+            activePlayer = activePlayer == .player ? .opponent : .player
+            winner = determineWinner()
+        }
+    }
+    
+    // MARK: - Private Instance Methods
     
     private func canMove(_ piece: Piece, to location: Square) -> Bool {
         (canMoveHorizontally(piece, to: location) || canMoveVertically(piece, to: location) || canMoveDiagonally(piece, to: location))
@@ -178,29 +209,42 @@ struct LinesOfAction {
         }
     }
     
-    mutating func select(_ piece: Piece) {
-        if let index = pieces.firstIndex(matching: piece) {
-            selectedPieceIndex = piece.isSelected ? nil : index
+    private func determineWinner() -> Player? {
+        if didWin(.player) {
+            return .player
+        } else if didWin(.opponent) {
+            return .opponent
         }
+        return nil
     }
     
-    mutating func deselectAllPieces() {
-        selectedPieceIndex = nil
+    private func didWin(_ player: Player) -> Bool {
+        let pieces = playerPieces(for: player)
+        return pieces.count < 2 || allConnected(pieces)
     }
     
-    mutating func moveTo(_ x: Int, _ y: Int) {
-        if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
-            if let capturedPiece = pieceAt(x, y), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
-                pieces.remove(at: capturedIndex)
+    private func allConnected(_ pieces: [Piece]) -> Bool {
+        var connectedPieces = [pieces.first!]
+        var shouldCheckForConnections = true
+        
+        while shouldCheckForConnections {
+            shouldCheckForConnections = false
+            
+            outerLoop: for p1 in pieces.filter({ !connectedPieces.contains($0) }) {
+                for p2 in connectedPieces {
+                    if abs(p1.location.x - p2.location.x) <= 1 && abs(p1.location.y - p2.location.y) <= 1 {
+                        shouldCheckForConnections = true
+                        connectedPieces.append(p1)
+                        break outerLoop
+                    }
+                }
             }
-
-            pieces[selectedPieceIndex!].location = Square(x, y)
-            selectedPieceIndex = nil
-            activePlayer = activePlayer == .player ? .opponent : .player
         }
+        
+        return connectedPieces.count == pieces.count
     }
         
-    // MARK: - Structs and Enumerations
+    // MARK: - Objects
     
     struct Square: Equatable, Hashable {
         let x: Int

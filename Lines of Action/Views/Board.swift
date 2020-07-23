@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct Board: View {
-    @EnvironmentObject var viewModel: LinesOfActionGame
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
         
     var body: some View {
         GeometryReader { geometry in

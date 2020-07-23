@@ -1,5 +1,5 @@
 //
-//  LinesOfActionGame.swift
+//  LinesOfActionViewModel.swift
 //  Lines of Action
 //
 //  Created by David Crow on 7/4/20.
@@ -8,10 +8,14 @@
 
 import SwiftUI
 
-class LinesOfActionGame: ObservableObject {
+class LinesOfActionViewModel: ObservableObject {
     @Published private var model: LinesOfAction = LinesOfAction()
     
     // MARK: - Access to the Model
+    
+    var winner: LinesOfAction.Player? {
+        model.winner
+    }
     
     var activePlayer: LinesOfAction.Player {
         model.activePlayer
