@@ -27,7 +27,7 @@ struct Placard: View {
                 PieceIcon(player: .opponent, maxDiameter: maxDiameter)
             }
         }
-        .padding()
+        .padding(contentPadding)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(player == activePlayer ? borderColor : Color.clear, lineWidth: borderWidth)
@@ -37,11 +37,12 @@ struct Placard: View {
     
     // MARK: - Drawing Constants
     
-    private let maxDiameter: CGFloat = 50
-    private let fontSize: Font = .title
+    private let maxDiameter: CGFloat = 25
+    private let fontSize: Font = .body
+    private let contentPadding: CGFloat = 10
     private let cornerRadius: CGFloat = 10
     private let borderColor: Color = .yellow
-    private let borderWidth: CGFloat = 5
+    private let borderWidth: CGFloat = 2
     
     private var title: String {
         player == .player ? "Player" : "Opponent"
