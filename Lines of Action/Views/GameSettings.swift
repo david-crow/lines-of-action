@@ -18,7 +18,7 @@ struct GameSettings: View {
                     Text("Hello World")
                 }
             }
-            .navigationBarTitle("Settings")
+            .navigationBarTitle("Settings", displayMode: .inline)
             .navigationBarItems(leading: cancel, trailing: done)
         }
     }

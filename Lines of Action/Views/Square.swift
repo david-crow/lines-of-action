@@ -50,9 +50,12 @@ struct Square: View {
     
     private let tokenScale: CGFloat = 0.15
     private let tokenColor: Color = .yellow
-    private let tokenPadding: CGFloat = 5
     
     private var tokenSize: CGFloat {
         tokenScale * min(size.width, size.height) / CGFloat(boardSize)
+    }
+    
+    private var tokenPadding: CGFloat {
+        0.25 * tokenSize
     }
 }

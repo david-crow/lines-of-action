@@ -36,18 +36,19 @@ struct Game: View {
                            maxHeight: UIScreen.main.bounds.width)
                 
                 if viewModel.winner != nil {
-                    WinnerBar(winner: viewModel.winner!, size: size)
+                    EndGamePanel(winner: viewModel.winner!, size: size)
+                        .frame(maxWidth: panelWidth(for: size), maxHeight: panelHeight(for: size))
                 }
             }
             
             HStack {
-                GameButton(label: "Undo")
-                GameButton(label: "Show Last")
-                GameButton(label: "Concede")
-                GameButton(label: "Rules")
+                GameButton("Undo") {}
+                GameButton("Show Last") {}
+                GameButton("Concede") {}
             }
             .padding(.horizontal)
         }
+        .navigationBarTitle("Player vs. Player", displayMode: .inline)
         .navigationBarItems(trailing:
             Button(action: {
                 self.showSettingsPanel = true
@@ -60,17 +61,34 @@ struct Game: View {
             GameSettings()
         }
     }
+    
+    // MARK: - Drawing Constants
+    
+    private func panelWidth(for size: CGSize) -> CGFloat {
+        5/8 * min(size.width, size.height)
+    }
+    
+    private func panelHeight(for size: CGSize) -> CGFloat {
+        3/8 * min(size.width, size.height)
+    }
 }
 
 struct GameButton: View {
     let label: String
+    let action: () -> Void
+    
+    init(_ label: String, action: @escaping () -> Void) {
+        self.label = label
+        self.action = action
+    }
     
     var body: some View {
-        ZStack {
-            Text(label)
-            RoundedRectangle(cornerRadius: 10).stroke()
-        }
-        .foregroundColor(.black)
+        Button(action: action, label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10).stroke(lineWidth: 1)
+                Text(label)
+            }
+        })
         .frame(maxHeight: 50)
     }
 }
