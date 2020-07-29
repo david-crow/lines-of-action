@@ -23,15 +23,12 @@ struct Game: View {
     
     private func body(for size: CGSize) -> some View {
         VStack {
-            HStack {
-                Placard(for: .player, activePlayer: viewModel.activePlayer)
-                Spacer()
-                Placard(for: .opponent, activePlayer: viewModel.activePlayer)
-            }
-
+            Placard(viewModel: viewModel)
+            
             ZStack {
                 Board()
                     .environmentObject(viewModel)
+                    .allowsHitTesting(canPlayGame)
                     .frame(maxWidth: UIScreen.main.bounds.width,
                            maxHeight: UIScreen.main.bounds.width)
                 
@@ -44,11 +41,12 @@ struct Game: View {
             HStack {
                 GameButton("Undo") {}
                 GameButton("Show Last") {}
-                GameButton("Concede") {}
+                GameButton("Concede") { self.viewModel.concede() }
             }
             .padding(.horizontal)
+            .allowsHitTesting(canPlayGame)
         }
-        .navigationBarTitle("Player vs. Player", displayMode: .inline)
+        .navigationBarTitle("Offline Multiplayer", displayMode: .inline)
         .navigationBarItems(trailing:
             Button(action: {
                 self.showSettingsPanel = true
@@ -58,18 +56,22 @@ struct Game: View {
             })
         )
         .sheet(isPresented: $showSettingsPanel) {
-            GameSettings()
+            GameSettings().environmentObject(self.viewModel)
         }
+    }
+    
+    private var canPlayGame: Bool {
+        viewModel.winner == nil
     }
     
     // MARK: - Drawing Constants
     
     private func panelWidth(for size: CGSize) -> CGFloat {
-        5/8 * min(size.width, size.height)
+        5 / 8 * min(size.width, size.height)
     }
     
     private func panelHeight(for size: CGSize) -> CGFloat {
-        3/8 * min(size.width, size.height)
+        3 / 8 * min(size.width, size.height)
     }
 }
 

@@ -9,30 +9,32 @@
 import SwiftUI
 
 struct Placard: View {
-    let player: LinesOfAction.Player
-    let activePlayer: LinesOfAction.Player
-    
-    init(for player: LinesOfAction.Player, activePlayer: LinesOfAction.Player) {
-        self.player = player
-        self.activePlayer = activePlayer
-    }
+    @ObservedObject var viewModel: LinesOfActionViewModel
     
     var body: some View {
         HStack {
+            body(for: .player)
+            Spacer()
+            body(for: .opponent)
+        }
+    }
+    
+    private func body(for player: LinesOfAction.Player) -> some View {
+        HStack {
             if player == .player {
                 PieceIcon(player: player, maxDiameter: maxDiameter)
-                Text(title).font(fontSize)
+                Text(viewModel.name(for: .player)).font(fontSize)
             } else {
-                Text(title).font(fontSize)
+                Text(viewModel.name(for: .opponent)).font(fontSize)
                 PieceIcon(player: .opponent, maxDiameter: maxDiameter)
             }
         }
         .padding(contentPadding)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(player == activePlayer ? borderColor : Color.clear, lineWidth: borderWidth)
+                .stroke(viewModel.isActive(player) ? borderColor : Color.clear, lineWidth: borderWidth)
         )
-        .padding(paddingSet)
+        .padding(.horizontal)
     }
     
     // MARK: - Drawing Constants
@@ -43,12 +45,4 @@ struct Placard: View {
     private let cornerRadius: CGFloat = 10
     private let borderColor: Color = .yellow
     private let borderWidth: CGFloat = 2
-    
-    private var title: String {
-        player == .player ? "Player" : "Opponent"
-    }
-    
-    private var paddingSet: Edge.Set {
-        player == .player ? .leading : .trailing
-    }
 }

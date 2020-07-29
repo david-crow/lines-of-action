@@ -10,22 +10,39 @@ import SwiftUI
 
 struct GameSettings: View {
     @Environment(\.presentationMode) var presentation
+    
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
+    
+    @State private var playerName: String = ""
+    @State private var opponentName: String = ""
         
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    Text("Hello World")
+                    TextField("Player 1", text: $playerName, onEditingChanged: { began in
+                        if !began {
+                            self.viewModel.changeName(for: .player, newName: self.playerName)
+                        }
+                    })
+                    
+                    TextField("Player 2", text: $opponentName, onEditingChanged: { began in
+                        if !began {
+                            self.viewModel.changeName(for: .opponent, newName: self.opponentName)
+                        }
+                    })
+                }
+                
+                Section {
+                    Toggle(isOn: $viewModel.showValidMoves) { Text("Show Valid Moves") }
                 }
             }
             .navigationBarTitle("Settings", displayMode: .inline)
-            .navigationBarItems(leading: cancel, trailing: done)
+            .navigationBarItems(trailing: done)
         }
-    }
-    
-    private var cancel: some View {
-        Button("Cancel") {
-            self.presentation.wrappedValue.dismiss()
+        .onAppear {
+            self.playerName = self.viewModel.name(for: .player)
+            self.opponentName = self.viewModel.name(for: .opponent)
         }
     }
     

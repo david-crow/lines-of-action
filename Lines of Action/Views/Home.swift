@@ -31,15 +31,15 @@ struct Home: View {
                     .padding(.vertical, titlePadding)
                 
                 NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
-                    NavigationButton(label: "One Player")
+                    NavigationButton(label: "Single Player")
                 }
                 
                 NavigationLink(destination: Game(viewModel: LinesOfActionViewModel())) {
-                    NavigationButton(label: "Two Player")
+                    NavigationButton(label: "Offline Multiplayer")
                 }
                 
                 NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
-                    NavigationButton(label: "Network Play")
+                    NavigationButton(label: "Online Multiplayer")
                 }
                 
                 NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {

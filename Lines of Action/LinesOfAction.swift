@@ -93,6 +93,10 @@ struct LinesOfAction {
     
     // MARK: - Mutating Instance Methods
     
+    mutating func concede() {
+        winner = (activePlayer == .player ? .opponent : .player)
+    }
+    
     mutating func select(_ piece: Piece) {
         if let index = pieces.firstIndex(matching: piece) {
             selectedPieceIndex = piece.isSelected ? nil : index

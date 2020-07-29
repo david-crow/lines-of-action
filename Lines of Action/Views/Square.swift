@@ -9,30 +9,43 @@
 import SwiftUI
 
 struct Square: View {
-    let hasPiece: Bool
-    let color: Color
-    let selected: Bool
-    let highlighted: Bool
-    let boardSize: Int
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
+    
+    let col: Int
+    let row: Int
     let size: CGSize
+    
+    init(_ col: Int, _ row: Int, size: CGSize) {
+        self.col = col
+        self.row = row
+        self.size = size
+    }
 
     var body: some View {
         ZStack {
-            Rectangle().fill(selected ? Color.yellow : color)
-            if highlighted {
-                if hasPiece {
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Token(size: tokenSize, color: tokenColor).padding([.trailing, .top], tokenPadding)
-                        }
-                        Spacer()
-                    }
-                } else {
-                    Token(size: tokenSize, color: tokenColor)
-                }
+            Rectangle().fill(isSelected ? Color.yellow : color)
+            
+            if viewModel.showValidMoves && hasToken {
+                Token(size: tokenSize, color: tokenColor)
+                    .offset(hasPiece ? CGSize(width: tokenOffset, height: -tokenOffset) : CGSize(width: 0, height: 0))
             }
         }
+    }
+    
+    private var isSelected: Bool {
+        viewModel.isSelected(x: col, y: row)
+    }
+    
+    private var color: Color {
+        colorForSquare(x: col, y: row)
+    }
+    
+    private var hasToken: Bool {
+        viewModel.canMoveTo(x: col, y: row)
+    }
+    
+    private var hasPiece: Bool {
+        viewModel.pieceAt(x: col, y: row) != nil
     }
     
     struct Token: View {
@@ -51,11 +64,19 @@ struct Square: View {
     private let tokenScale: CGFloat = 0.15
     private let tokenColor: Color = .yellow
     
-    private var tokenSize: CGFloat {
-        tokenScale * min(size.width, size.height) / CGFloat(boardSize)
+    private var squareSize: CGFloat {
+        min(size.width, size.height) / CGFloat(viewModel.boardSize)
     }
     
-    private var tokenPadding: CGFloat {
-        0.25 * tokenSize
+    private var tokenSize: CGFloat {
+        tokenScale * squareSize
+    }
+    
+    private var tokenOffset: CGFloat {
+        0.5 * squareSize - 0.75 * tokenSize
+    }
+    
+    private func colorForSquare(x: Int, y: Int) -> Color {
+        (x + y) % 2 == 0 ? Color(UIColor.systemGray) : Color(UIColor.systemGray2)
     }
 }

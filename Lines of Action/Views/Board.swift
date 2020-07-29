@@ -23,14 +23,8 @@ struct Board: View {
                 ForEach(0..<self.viewModel.boardSize) { row in
                     HStack(spacing: 0) {
                         ForEach(0..<self.viewModel.boardSize) { col in
-                            Square(
-                                hasPiece: self.viewModel.pieceAt(x: col, y: row) != nil,
-                                color: self.colorForSquare(x: col, y: row),
-                                selected: self.viewModel.isSelected(x: col, y: row),
-                                highlighted: self.viewModel.canMoveTo(x: col, y: row),
-                                boardSize: self.viewModel.boardSize,
-                                size: size
-                            )
+                            Square(col, row, size: size)
+                                .environmentObject(self.viewModel)
                                 .overlay(Rectangle().stroke(Color.black))
                                 .onTapGesture { self.viewModel.selectSquare(x: col, y: row) }
                         }
@@ -44,11 +38,5 @@ struct Board: View {
             }
         }
         .aspectRatio(1, contentMode: .fit)
-    }
-    
-    // MARK: - Drawing Constants
-        
-    private func colorForSquare(x: Int, y: Int) -> Color {
-        (x + y) % 2 == 0 ? Color(UIColor.systemGray) : Color(UIColor.systemGray2)
     }
 }

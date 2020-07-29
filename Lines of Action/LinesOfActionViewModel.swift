@@ -11,14 +11,28 @@ import SwiftUI
 class LinesOfActionViewModel: ObservableObject {
     @Published private var model: LinesOfAction = LinesOfAction()
     
+    // MARK: - View Functionality
+    
+    @Published private(set) var playerName: String = "Player 1"
+    @Published private(set) var opponentName: String = "Player 2"
+    @Published var showValidMoves: Bool = true
+    
+    func name(for player: LinesOfAction.Player) -> String {
+        player == .player ? playerName : opponentName
+    }
+    
+    func changeName(for player: LinesOfAction.Player, newName name: String) {
+        if player == .player {
+            playerName = name
+        } else {
+            opponentName = name
+        }
+    }
+    
     // MARK: - Access to the Model
     
     var winner: LinesOfAction.Player? {
         model.winner
-    }
-    
-    var activePlayer: LinesOfAction.Player {
-        model.activePlayer
     }
     
     var boardSize: Int {
@@ -31,6 +45,10 @@ class LinesOfActionViewModel: ObservableObject {
     
     var pieces: [LinesOfAction.Piece] {
         model.pieces
+    }
+    
+    func isActive(_ player: LinesOfAction.Player) -> Bool {
+        player == model.activePlayer
     }
     
     func isSelected(x: Int, y: Int) -> Bool {
@@ -46,6 +64,10 @@ class LinesOfActionViewModel: ObservableObject {
     }
     
     // MARK: - Intent(s)
+    
+    func concede() {
+        model.concede()
+    }
     
     func selectSquare(x: Int, y: Int) {
         if let tappedPiece = model.pieceAt(x, y) {
