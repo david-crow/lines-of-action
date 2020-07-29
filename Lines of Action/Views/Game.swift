@@ -28,23 +28,29 @@ struct Game: View {
             ZStack {
                 Board()
                     .environmentObject(viewModel)
-                    .allowsHitTesting(canPlayGame)
+                    .allowsHitTesting(!viewModel.gameIsOver)
                     .frame(maxWidth: UIScreen.main.bounds.width,
                            maxHeight: UIScreen.main.bounds.width)
                 
-                if viewModel.winner != nil {
+                if viewModel.gameIsOver && !viewModel.didAnalyze {
                     EndGamePanel(winner: viewModel.winner!, size: size)
+                        .environmentObject(viewModel)
                         .frame(maxWidth: panelWidth(for: size), maxHeight: panelHeight(for: size))
                 }
             }
             
             HStack {
-                GameButton("Undo") {}
+                GameButton("Undo") {}.disabled(!viewModel.allowUndo)
                 GameButton("Show Last") {}
                 GameButton("Concede") { self.viewModel.concede() }
             }
             .padding(.horizontal)
-            .allowsHitTesting(canPlayGame)
+            .disabled(viewModel.gameIsOver)
+            
+            GameButton("New Game") { self.viewModel.resetGame() }
+                .padding(.horizontal)
+                .opacity(viewModel.didAnalyze ? 1 : 0)
+                .disabled(!viewModel.didAnalyze)
         }
         .navigationBarTitle("Offline Multiplayer", displayMode: .inline)
         .navigationBarItems(trailing:
@@ -58,10 +64,6 @@ struct Game: View {
         .sheet(isPresented: $showSettingsPanel) {
             GameSettings().environmentObject(self.viewModel)
         }
-    }
-    
-    private var canPlayGame: Bool {
-        viewModel.winner == nil
     }
     
     // MARK: - Drawing Constants

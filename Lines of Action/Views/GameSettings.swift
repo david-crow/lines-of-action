@@ -15,11 +15,17 @@ struct GameSettings: View {
     
     @State private var playerName: String = ""
     @State private var opponentName: String = ""
-        
+    
     var body: some View {
+        GeometryReader { geometry in
+            self.body(for: geometry.size)
+        }
+    }
+    
+    private func body(for size: CGSize) -> some View {
         NavigationView {
             Form {
-                Section {
+                Section(header: Text("Names")) {
                     TextField("Player 1", text: $playerName, onEditingChanged: { began in
                         if !began {
                             self.viewModel.changeName(for: .player, newName: self.playerName)
@@ -33,8 +39,19 @@ struct GameSettings: View {
                     })
                 }
                 
-                Section {
+                Section(header: Text("Options")) {
                     Toggle(isOn: $viewModel.showValidMoves) { Text("Show Valid Moves") }
+                    Toggle(isOn: $viewModel.allowUndo) { Text("Enable Undo Button") }
+                }
+                
+                Section(header: Text("Theme")) {
+                    Picker(viewModel.theme.name, selection: $viewModel.theme) {
+                        ForEach(Theme.themes) { theme in
+                            Text(theme.name)
+                        }
+                    }
+                    
+                    ThemeView(theme: viewModel.theme, size: size)
                 }
             }
             .navigationBarTitle("Settings", displayMode: .inline)

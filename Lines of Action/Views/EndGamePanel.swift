@@ -9,6 +9,10 @@
 import SwiftUI
 
 struct EndGamePanel: View {
+    @Environment(\.presentationMode) var presentation
+    
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
+    
     let winner: LinesOfAction.Player
     let size: CGSize
     
@@ -20,16 +24,16 @@ struct EndGamePanel: View {
             VStack {
                 HStack {
                     PieceIcon(player: winner, maxDiameter: pieceDiameter)
-                    Text("Winner!").font(Font.title.weight(.semibold))
+                    Text("Winner!").font(winnerFont)
                     PieceIcon(player: winner, maxDiameter: pieceDiameter)
                 }
                 
                 Group {
-                    Button("Rematch") {}
-                    Button("Analyze") {}
-                    Button("Main Menu") {}
+                    Button("New Game") { self.viewModel.resetGame() }
+                    Button("Analyze") { self.viewModel.analyze() }
+                    Button("Main Menu") { self.presentation.wrappedValue.dismiss() }
                 }
-                .padding(5)
+                .padding(buttonPadding)
                 
             }
             .padding()
@@ -38,15 +42,17 @@ struct EndGamePanel: View {
     
     // MARK: - Drawing Constants
     
-    private let pieceDiameter: CGFloat = 40
     private let cornerRadius: CGFloat = 10
     private let strokeWidth: CGFloat = 2
+    private let pieceDiameter: CGFloat = 40
+    private let winnerFont: Font = Font.title.weight(.semibold)
+    private let buttonPadding: CGFloat = 5
     
     private var panelWidth: CGFloat {
-        5/8 * min(size.width, size.height)
+        5 / 8 * min(size.width, size.height)
     }
     
     private var panelHeight: CGFloat {
-        3/8 * min(size.width, size.height)
+        3 / 8 * min(size.width, size.height)
     }
 }

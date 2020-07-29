@@ -25,7 +25,7 @@ struct Square: View {
         ZStack {
             Rectangle().fill(isSelected ? Color.yellow : color)
             
-            if viewModel.showValidMoves && hasToken {
+            if hasToken {
                 Token(size: tokenSize, color: tokenColor)
                     .offset(hasPiece ? CGSize(width: tokenOffset, height: -tokenOffset) : CGSize(width: 0, height: 0))
             }
@@ -33,7 +33,7 @@ struct Square: View {
     }
     
     private var isSelected: Bool {
-        viewModel.isSelected(x: col, y: row)
+        !viewModel.gameIsOver && viewModel.isSelected(x: col, y: row)
     }
     
     private var color: Color {
@@ -41,7 +41,7 @@ struct Square: View {
     }
     
     private var hasToken: Bool {
-        viewModel.canMoveTo(x: col, y: row)
+        !viewModel.gameIsOver && viewModel.showValidMoves && viewModel.canMoveTo(x: col, y: row)
     }
     
     private var hasPiece: Bool {

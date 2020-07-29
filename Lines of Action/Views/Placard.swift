@@ -32,9 +32,13 @@ struct Placard: View {
         .padding(contentPadding)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(viewModel.isActive(player) ? borderColor : Color.clear, lineWidth: borderWidth)
+                .stroke(isAtMove(player) ? borderColor : Color.clear, lineWidth: borderWidth)
         )
         .padding(.horizontal)
+    }
+    
+    private func isAtMove(_ player: LinesOfAction.Player) -> Bool {
+        viewModel.isActive(player) && !viewModel.gameIsOver
     }
     
     // MARK: - Drawing Constants

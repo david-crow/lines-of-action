@@ -15,7 +15,11 @@ class LinesOfActionViewModel: ObservableObject {
     
     @Published private(set) var playerName: String = "Player 1"
     @Published private(set) var opponentName: String = "Player 2"
+    @Published private(set) var didAnalyze: Bool = false
     @Published var showValidMoves: Bool = true
+    @Published var allowUndo: Bool = true
+    
+    var theme: Theme = Theme.themes[0]
     
     func name(for player: LinesOfAction.Player) -> String {
         player == .player ? playerName : opponentName
@@ -29,10 +33,18 @@ class LinesOfActionViewModel: ObservableObject {
         }
     }
     
+    func analyze() {
+        didAnalyze = true
+    }
+    
     // MARK: - Access to the Model
     
     var winner: LinesOfAction.Player? {
         model.winner
+    }
+    
+    var gameIsOver: Bool {
+        model.winner != nil
     }
     
     var boardSize: Int {
@@ -64,6 +76,11 @@ class LinesOfActionViewModel: ObservableObject {
     }
     
     // MARK: - Intent(s)
+    
+    func resetGame() {
+        model = LinesOfAction()
+        didAnalyze = false
+    }
     
     func concede() {
         model.concede()
