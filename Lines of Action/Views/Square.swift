@@ -23,20 +23,25 @@ struct Square: View {
 
     var body: some View {
         ZStack {
-            Rectangle().fill(isSelected ? Color.yellow : color)
+            Rectangle()
+                .fill(isHighlighted ? Color.yellow : squareColor)
+                .animation(.easeInOut(duration: highlightFadeDuration))
             
-            if hasToken {
-                Token(size: tokenSize, color: tokenColor)
-                    .offset(hasPiece ? CGSize(width: tokenOffset, height: -tokenOffset) : CGSize(width: 0, height: 0))
-            }
+            Circle()
+                .fill(hasToken ? tokenColor : .clear)
+                .frame(width: tokenSize, height: tokenSize)
+                .offset(hasPiece ? CGSize(width: tokenOffset, height: -tokenOffset) : CGSize(width: 0, height: 0))
+                .animation(.easeInOut(duration: highlightFadeDuration))
         }
     }
     
-    private var isSelected: Bool {
-        !viewModel.gameIsOver && viewModel.isSelected(x: col, y: row)
+    private var isHighlighted: Bool {
+        let shouldBeHighlighted = viewModel.isSelected(x: col, y: row)
+            || (viewModel.isLastMove(x: col, y: row) && viewModel.showLastMove)
+        return shouldBeHighlighted && !viewModel.gameIsOver
     }
     
-    private var color: Color {
+    private var squareColor: Color {
         colorForSquare(x: col, y: row)
     }
     
@@ -48,19 +53,9 @@ struct Square: View {
         viewModel.pieceAt(x: col, y: row) != nil
     }
     
-    struct Token: View {
-        let size: CGFloat
-        let color: Color
-        
-        var body: some View {
-            Circle()
-                .fill(color)
-                .frame(width: size, height: size)
-        }
-    }
-    
     // MARK: - Drawing Constants
     
+    private let highlightFadeDuration: Double = 0.25
     private let tokenScale: CGFloat = 0.15
     private let tokenColor: Color = .yellow
     

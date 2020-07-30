@@ -17,10 +17,12 @@ struct LinesOfAction {
     
     private(set) var activePlayer: Player = .player
     
+    private(set) var moves: [Move] = []
+    
     private(set) var squares: [Square]
     
     private(set) var pieces: [Piece]
-    
+        
     private(set) var selectedPieceIndex: Int? {
         get { pieces.indices.filter { pieces[$0].isSelected }.only }
         set {
@@ -73,9 +75,26 @@ struct LinesOfAction {
         return false
     }
     
+    func isLastMove(_ x: Int, _ y: Int) -> Bool {
+        if let previousMove = moves.last {
+            let square = Square(x, y)
+            return square == previousMove.oldLocation || square == previousMove.newLocation
+        }
+        return false
+    }
+    
     func pieceAt(_ x: Int, _ y: Int) -> Piece? {
         for piece in pieces {
             if piece.location.x == x && piece.location.y == y {
+                return piece
+            }
+        }
+        return nil
+    }
+    
+    func pieceAt(_ location: Square) -> Piece? {
+        for piece in pieces {
+            if piece.location.x == location.x && piece.location.y == location.y {
                 return piece
             }
         }
@@ -107,20 +126,44 @@ struct LinesOfAction {
         selectedPieceIndex = nil
     }
     
-    mutating func moveTo(_ x: Int, _ y: Int) {
+    mutating func moveTo(_ x: Int, _ y: Int, newMove: Bool = true) {
         if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
-            if let capturedPiece = pieceAt(x, y), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
+            let newLocation = Square(x, y)
+            let oldLocation = pieces[selectedPieceIndex!].location
+            var move = Move(oldLocation: oldLocation, newLocation: newLocation)
+            
+            if let capturedPiece = pieceAt(newLocation), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
                 pieces.remove(at: capturedIndex)
+                move.capturedPiece = true
             }
-
-            pieces[selectedPieceIndex!].location = Square(x, y)
+            
+            moves.append(move)
+            pieces[selectedPieceIndex!].location = newLocation
             selectedPieceIndex = nil
-            activePlayer = activePlayer == .player ? .opponent : .player
+            activePlayer = opponent(for: activePlayer)
             winner = determineWinner()
         }
     }
     
+    mutating func undo() {
+        if let previousMove = moves.popLast() {
+            let piece = pieceAt(previousMove.newLocation)!
+            let index = pieces.firstIndex(matching: piece)!
+            pieces[index].location = previousMove.oldLocation
+            
+            if previousMove.capturedPiece {
+                pieces.append(Piece(player: activePlayer, location: previousMove.newLocation))
+            }
+            
+            activePlayer = opponent(for: activePlayer)
+        }
+    }
+    
     // MARK: - Private Instance Methods
+    
+    private func opponent(for player: Player) -> Player {
+        player == .player ? .opponent : .player
+    }
     
     private func canMove(_ piece: Piece, to location: Square) -> Bool {
         (canMoveHorizontally(piece, to: location) || canMoveVertically(piece, to: location) || canMoveDiagonally(piece, to: location))
@@ -151,7 +194,7 @@ struct LinesOfAction {
     }
     
     private func landingOnPlayer(_ piece: Piece, movingTo location: Square) -> Bool {
-        piece.player == pieceAt(location.x, location.y)?.player
+        piece.player == pieceAt(location)?.player
     }
     
     private func jumpingOpponent(_ piece: Piece, movingTo location: Square) -> Bool {
@@ -258,6 +301,12 @@ struct LinesOfAction {
             self.x = x
             self.y = y
         }
+    }
+    
+    struct Move {
+        let oldLocation: Square
+        let newLocation: Square
+        var capturedPiece = false
     }
     
     struct Piece: Identifiable, Hashable {

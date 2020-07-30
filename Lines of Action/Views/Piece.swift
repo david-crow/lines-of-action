@@ -20,8 +20,7 @@ struct Piece: View {
     }
     
     var body: some View {
-        PieceIcon(player: piece.player, maxDiameter: squareSize)
-            .offset(CGSize(width: xOffset, height: yOffset))
+        PieceIcon(player: piece.player, maxDiameter: squareSize).offset(pieceOffset)
     }
     
     // MARK: - Drawing Constants
@@ -30,16 +29,11 @@ struct Piece: View {
         min(size.width, size.height) / CGFloat(boardSize)
     }
     
-    private var xOffset: CGFloat {
+    private var pieceOffset: CGSize {
         let centerline = 0.5 * (CGFloat(boardSize) - 1)
         let colOffset = centerline - CGFloat(piece.location.x)
-        return -squareSize * colOffset
-    }
-    
-    private var yOffset: CGFloat {
-        let centerline = 0.5 * (CGFloat(boardSize) - 1)
         let rowOffset = centerline - CGFloat(piece.location.y)
-        return -squareSize * rowOffset
+        return CGSize(width: -squareSize * colOffset, height: -squareSize * rowOffset)
     }
 }
 

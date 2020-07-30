@@ -40,8 +40,12 @@ struct Game: View {
             }
             
             HStack {
-                GameButton("Undo") {}.disabled(!viewModel.allowUndo)
-                GameButton("Show Last") {}
+                GameButton("Undo") { self.viewModel.undo() }
+                    .disabled(!viewModel.allowUndo || !viewModel.piecesHaveBeenMoved)
+                
+                GameButton("Show Last") { self.viewModel.showLastMove = true }
+                    .disabled(viewModel.showLastMove || !viewModel.piecesHaveBeenMoved)
+                
                 GameButton("Concede") { self.viewModel.concede() }
             }
             .padding(.horizontal)

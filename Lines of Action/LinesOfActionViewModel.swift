@@ -18,9 +18,18 @@ class LinesOfActionViewModel: ObservableObject {
     @Published private(set) var didAnalyze: Bool = false
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true
+    @Published var showLastMove: Bool = false {
+        didSet {
+            if showLastMove {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                    self.showLastMove = false
+                })
+            }
+        }
+    }
     
     var theme: Theme = Theme.themes[0]
-    
+        
     func name(for player: LinesOfAction.Player) -> String {
         player == .player ? playerName : opponentName
     }
@@ -41,6 +50,10 @@ class LinesOfActionViewModel: ObservableObject {
     
     var winner: LinesOfAction.Player? {
         model.winner
+    }
+    
+    var piecesHaveBeenMoved: Bool {
+        model.moves.count > 0
     }
     
     var gameIsOver: Bool {
@@ -67,6 +80,10 @@ class LinesOfActionViewModel: ObservableObject {
         model.isSelected(x, y)
     }
     
+    func isLastMove(x: Int, y: Int) -> Bool {
+        model.isLastMove(x, y)
+    }
+        
     func pieceAt(x: Int, y: Int) -> LinesOfAction.Piece? {
         model.pieceAt(x, y)
     }
@@ -84,6 +101,10 @@ class LinesOfActionViewModel: ObservableObject {
     
     func concede() {
         model.concede()
+    }
+    
+    func undo() {
+        model.undo()
     }
     
     func selectSquare(x: Int, y: Int) {
