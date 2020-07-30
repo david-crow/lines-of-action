@@ -9,36 +9,39 @@
 import SwiftUI
 
 struct Piece: View {
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
+    
     let piece: LinesOfAction.Piece
     let size: CGSize
-    let boardSize: Int
     
-    init(_ piece: LinesOfAction.Piece, size: CGSize, boardSize: Int) {
+    init(_ piece: LinesOfAction.Piece, size: CGSize) {
         self.piece = piece
         self.size = size
-        self.boardSize = boardSize
     }
     
     var body: some View {
-        PieceIcon(player: piece.player, maxDiameter: squareSize).offset(pieceOffset)
+        PieceIcon(color: color, maxDiameter: squareSize).position(pieceLocation)
+    }
+    
+    private var color: Color {
+        piece.player == .player ? viewModel.theme.playerColor : viewModel.theme.opponentColor
     }
     
     // MARK: - Drawing Constants
     
     private var squareSize: CGFloat {
-        min(size.width, size.height) / CGFloat(boardSize)
+        min(size.width, size.height) / CGFloat(viewModel.boardSize)
     }
     
-    private var pieceOffset: CGSize {
-        let centerline = 0.5 * (CGFloat(boardSize) - 1)
-        let colOffset = centerline - CGFloat(piece.location.x)
-        let rowOffset = centerline - CGFloat(piece.location.y)
-        return CGSize(width: -squareSize * colOffset, height: -squareSize * rowOffset)
+    private var pieceLocation: CGPoint {
+        let colOffset = 0.5 + CGFloat(piece.location.x)
+        let rowOffset = 0.5 + CGFloat(piece.location.y)
+        return CGPoint(x: squareSize * colOffset, y: squareSize * rowOffset)
     }
 }
 
 struct PieceIcon: View {
-    let player: LinesOfAction.Player
+    let color: Color
     let maxDiameter: CGFloat
     
     var body: some View {
@@ -62,10 +65,6 @@ struct PieceIcon: View {
     
     private let numStarCorners = 5
     private let starSmoothness: CGFloat = 0.45
-    
-    private var color: Color {
-        player == .player ? .red : .blue
-    }
     
     private var outerPieceSize: CGFloat {
         0.8 * maxDiameter

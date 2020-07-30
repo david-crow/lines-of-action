@@ -23,17 +23,15 @@ struct Board: View {
                 ForEach(0..<self.viewModel.boardSize) { row in
                     HStack(spacing: 0) {
                         ForEach(0..<self.viewModel.boardSize) { col in
-                            Square(col, row, size: size)
-                                .environmentObject(self.viewModel)
-                                .overlay(Rectangle().stroke(Color.black))
-                                .onTapGesture { self.viewModel.selectSquare(x: col, y: row) }
+                            Square(col, row, size: size).environmentObject(self.viewModel)
                         }
                     }
                 }
             }
 
             ForEach(viewModel.pieces, id: \.self) { piece in
-                Piece(piece, size: size, boardSize: self.viewModel.boardSize)
+                Piece(piece, size: size)
+                    .environmentObject(self.viewModel)
                     .allowsHitTesting(false)
             }
         }

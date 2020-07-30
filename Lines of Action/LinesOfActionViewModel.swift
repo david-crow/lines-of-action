@@ -16,6 +16,7 @@ class LinesOfActionViewModel: ObservableObject {
     @Published private(set) var playerName: String = "Player 1"
     @Published private(set) var opponentName: String = "Player 2"
     @Published private(set) var didAnalyze: Bool = false
+    @Published var theme: Theme = Theme.themes[0]
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true
     @Published var showLastMove: Bool = false {
@@ -28,8 +29,6 @@ class LinesOfActionViewModel: ObservableObject {
         }
     }
     
-    var theme: Theme = Theme.themes[0]
-        
     func name(for player: LinesOfAction.Player) -> String {
         player == .player ? playerName : opponentName
     }

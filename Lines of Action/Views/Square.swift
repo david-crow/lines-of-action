@@ -23,22 +23,26 @@ struct Square: View {
 
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(isHighlighted ? Color.yellow : squareColor)
-                .animation(.easeInOut(duration: highlightFadeDuration))
+            ZStack {
+                Rectangle().fill(isSelected ? Color.yellow : squareColor)
+                Rectangle().fill(isLastMove ? Color.yellow : .clear)
+            }
+            .overlay(Rectangle().stroke())
             
             Circle()
                 .fill(hasToken ? tokenColor : .clear)
                 .frame(width: tokenSize, height: tokenSize)
                 .offset(hasPiece ? CGSize(width: tokenOffset, height: -tokenOffset) : CGSize(width: 0, height: 0))
-                .animation(.easeInOut(duration: highlightFadeDuration))
         }
+        .onTapGesture { self.viewModel.selectSquare(x: self.col, y: self.row) }
     }
     
-    private var isHighlighted: Bool {
-        let shouldBeHighlighted = viewModel.isSelected(x: col, y: row)
-            || (viewModel.isLastMove(x: col, y: row) && viewModel.showLastMove)
-        return shouldBeHighlighted && !viewModel.gameIsOver
+    private var isSelected: Bool {
+        !viewModel.gameIsOver && viewModel.isSelected(x: col, y: row)
+    }
+    
+    private var isLastMove: Bool {
+        !viewModel.gameIsOver && viewModel.showLastMove && viewModel.isLastMove(x: col, y: row)
     }
     
     private var squareColor: Color {
@@ -55,7 +59,6 @@ struct Square: View {
     
     // MARK: - Drawing Constants
     
-    private let highlightFadeDuration: Double = 0.25
     private let tokenScale: CGFloat = 0.15
     private let tokenColor: Color = .yellow
     
@@ -72,6 +75,6 @@ struct Square: View {
     }
     
     private func colorForSquare(x: Int, y: Int) -> Color {
-        (x + y) % 2 == 0 ? Color(UIColor.systemGray) : Color(UIColor.systemGray2)
+        (x + y) % 2 == 0 ? viewModel.theme.firstSquareColor : viewModel.theme.secondSquareColor
     }
 }

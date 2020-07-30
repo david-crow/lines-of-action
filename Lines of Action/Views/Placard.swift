@@ -22,11 +22,11 @@ struct Placard: View {
     private func body(for player: LinesOfAction.Player) -> some View {
         HStack {
             if player == .player {
-                PieceIcon(player: player, maxDiameter: maxDiameter)
+                PieceIcon(color: viewModel.theme.playerColor, maxDiameter: maxDiameter)
                 Text(viewModel.name(for: .player)).font(fontSize)
             } else {
                 Text(viewModel.name(for: .opponent)).font(fontSize)
-                PieceIcon(player: .opponent, maxDiameter: maxDiameter)
+                PieceIcon(color: viewModel.theme.opponentColor, maxDiameter: maxDiameter)
             }
         }
         .padding(contentPadding)

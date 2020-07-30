@@ -45,13 +45,13 @@ struct GameSettings: View {
                 }
                 
                 Section(header: Text("Theme")) {
-                    Picker(viewModel.theme.name, selection: $viewModel.theme) {
-                        ForEach(Theme.themes) { theme in
-                            Text(theme.name)
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(Theme.themes) { theme in
+                                ThemeView(for: theme, size: size).environmentObject(self.viewModel)
+                            }
                         }
                     }
-                    
-                    ThemeView(theme: viewModel.theme, size: size)
                 }
             }
             .navigationBarTitle("Settings", displayMode: .inline)

@@ -33,7 +33,7 @@ struct Game: View {
                            maxHeight: UIScreen.main.bounds.width)
                 
                 if viewModel.gameIsOver && !viewModel.didAnalyze {
-                    EndGamePanel(winner: viewModel.winner!, size: size)
+                    EndGamePanel(size: size)
                         .environmentObject(viewModel)
                         .frame(maxWidth: panelWidth(for: size), maxHeight: panelHeight(for: size))
                 }
@@ -58,12 +58,9 @@ struct Game: View {
         }
         .navigationBarTitle("Offline Multiplayer", displayMode: .inline)
         .navigationBarItems(trailing:
-            Button(action: {
-                self.showSettingsPanel = true
-            }, label: {
-                Image(systemName: "gear")
-                    .imageScale(.large)
-            })
+            Button(action: { self.showSettingsPanel = true }) {
+                Image(systemName: "gear").imageScale(.large)
+            }
         )
         .sheet(isPresented: $showSettingsPanel) {
             GameSettings().environmentObject(self.viewModel)
@@ -91,12 +88,12 @@ struct GameButton: View {
     }
     
     var body: some View {
-        Button(action: action, label: {
+        Button(action: action) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10).stroke(lineWidth: 1)
                 Text(label)
             }
-        })
+        }
         .frame(maxHeight: 50)
     }
 }

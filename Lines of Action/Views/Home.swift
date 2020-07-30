@@ -19,10 +19,10 @@ struct Home: View {
         NavigationView {
             VStack {
                 ZStack {
-                    PieceIcon(player: .player, maxDiameter: logoDiameter)
+                    PieceIcon(color: firstLogoColor, maxDiameter: logoDiameter)
                         .offset(CGSize(width: -logoOffset, height: -logoOffset))
                     
-                    PieceIcon(player: .opponent, maxDiameter: logoDiameter)
+                    PieceIcon(color: secondLogoColor, maxDiameter: logoDiameter)
                         .offset(CGSize(width: logoOffset, height: 0))
                 }
                 
@@ -59,6 +59,14 @@ struct Home: View {
     private let logoDiameter: CGFloat = 200
     private let logoOffset: CGFloat = 40
     private let titlePadding: CGFloat = 25
+    
+    private var firstLogoColor: Color {
+        Theme.themes.filter { $0.name == "Classic" }.only!.playerColor
+    }
+    
+    private var secondLogoColor: Color {
+        Theme.themes.filter { $0.name == "Classic" }.only!.opponentColor
+    }
 }
 
 struct NavigationButton: View {
@@ -69,7 +77,7 @@ struct NavigationButton: View {
             Text(label)
             RoundedRectangle(cornerRadius: 10).stroke(lineWidth: 1)
         }
-        .foregroundColor(.black)
+        .foregroundColor(.primary)
         .frame(maxWidth: 200, maxHeight: 50)
     }
 }

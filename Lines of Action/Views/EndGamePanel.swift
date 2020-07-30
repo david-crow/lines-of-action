@@ -13,19 +13,18 @@ struct EndGamePanel: View {
     
     @EnvironmentObject var viewModel: LinesOfActionViewModel
     
-    let winner: LinesOfAction.Player
     let size: CGSize
     
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: cornerRadius).fill(Color.white)
-            RoundedRectangle(cornerRadius: cornerRadius).stroke(lineWidth: strokeWidth)
+            RoundedRectangle(cornerRadius: cornerRadius).stroke(lineWidth: strokeWidth).fill(Color.black)
             
             VStack {
                 HStack {
-                    PieceIcon(player: winner, maxDiameter: pieceDiameter)
-                    Text("Winner!").font(winnerFont)
-                    PieceIcon(player: winner, maxDiameter: pieceDiameter)
+                    PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
+                    Text("Winner!").font(winnerFont).foregroundColor(.black)
+                    PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
                 }
                 
                 Group {
@@ -54,5 +53,9 @@ struct EndGamePanel: View {
     
     private var panelHeight: CGFloat {
         3 / 8 * min(size.width, size.height)
+    }
+    
+    private var pieceColor: Color {
+        viewModel.winner == .player ? viewModel.theme.playerColor : viewModel.theme.opponentColor
     }
 }
