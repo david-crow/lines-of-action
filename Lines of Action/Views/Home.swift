@@ -69,7 +69,7 @@ struct Home: View {
     }
 }
 
-struct NavigationButton: View {
+fileprivate struct NavigationButton: View {
     let label: String
     
     var body: some View {

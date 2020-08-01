@@ -14,15 +14,10 @@ struct LinesOfAction {
     let boardSize: Int
     
     private(set) var winner: Player?
-    
     private(set) var activePlayer: Player = .player
-    
     private(set) var moves: [Move] = []
-    
     private(set) var squares: [Square]
-    
     private(set) var pieces: [Piece]
-        
     private(set) var selectedPieceIndex: Int? {
         get { pieces.indices.filter { pieces[$0].isSelected }.only }
         set {

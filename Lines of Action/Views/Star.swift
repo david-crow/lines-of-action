@@ -81,9 +81,3 @@ struct Star: Shape {
         return path.applying(transform)
     }
 }
-
-struct Star_Previews: PreviewProvider {
-    static var previews: some View {
-        Star(corners: 5, smoothness: 0.45)
-    }
-}

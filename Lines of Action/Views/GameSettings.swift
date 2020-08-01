@@ -26,17 +26,8 @@ struct GameSettings: View {
         NavigationView {
             Form {
                 Section(header: Text("Names")) {
-                    TextField("Player 1", text: $playerName, onEditingChanged: { began in
-                        if !began {
-                            self.viewModel.changeName(for: .player, newName: self.playerName)
-                        }
-                    })
-                    
-                    TextField("Player 2", text: $opponentName, onEditingChanged: { began in
-                        if !began {
-                            self.viewModel.changeName(for: .opponent, newName: self.opponentName)
-                        }
-                    })
+                    TextField("Player 1", text: $viewModel.playerName)
+                    TextField("Player 2", text: $viewModel.opponentName)
                 }
                 
                 Section(header: Text("Options")) {

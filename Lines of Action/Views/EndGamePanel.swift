@@ -16,27 +16,28 @@ struct EndGamePanel: View {
     let size: CGSize
     
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: cornerRadius).fill(Color.white)
-            RoundedRectangle(cornerRadius: cornerRadius).stroke(lineWidth: strokeWidth).fill(Color.black)
-            
-            VStack {
-                HStack {
-                    PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
-                    Text("Winner!").font(winnerFont).foregroundColor(.black)
-                    PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
-                }
-                
-                Group {
-                    Button("New Game") { self.viewModel.resetGame() }
-                    Button("Analyze") { self.viewModel.analyze() }
-                    Button("Main Menu") { self.presentation.wrappedValue.dismiss() }
-                }
-                .padding(buttonPadding)
-                
+        VStack {
+            HStack {
+                PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
+                Text("Winner!").font(winnerFont).foregroundColor(.black)
+                PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
             }
-            .padding()
+            
+            Group {
+                Button("New Game") { self.viewModel.resetGame() }
+                Button("Analysis") { self.viewModel.didAnalyze = true }
+                Button("Main Menu") { self.presentation.wrappedValue.dismiss() }
+            }
+            .padding(buttonPadding)
         }
+        .padding()
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.white)
+                    .shadow(radius: 3)
+            }
+        )
     }
     
     // MARK: - Drawing Constants

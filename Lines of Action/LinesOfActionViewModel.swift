@@ -13,10 +13,10 @@ class LinesOfActionViewModel: ObservableObject {
     
     // MARK: - View Functionality
     
-    @Published private(set) var playerName: String = "Player 1"
-    @Published private(set) var opponentName: String = "Player 2"
-    @Published private(set) var didAnalyze: Bool = false
-    @Published var theme: Theme = Theme.themes[0]
+    @Published var playerName: String = "Player 1"
+    @Published var opponentName: String = "Player 2"
+    @Published var didAnalyze: Bool = false
+    @Published var theme: Theme = Theme.themes.randomElement()!
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true
     @Published var showLastMove: Bool = false {
@@ -29,6 +29,10 @@ class LinesOfActionViewModel: ObservableObject {
         }
     }
     
+    var activeColor: Color {
+        model.activePlayer == .player ? theme.playerColor : theme.opponentColor
+    }
+    
     func name(for player: LinesOfAction.Player) -> String {
         player == .player ? playerName : opponentName
     }
@@ -39,10 +43,6 @@ class LinesOfActionViewModel: ObservableObject {
         } else {
             opponentName = name
         }
-    }
-    
-    func analyze() {
-        didAnalyze = true
     }
     
     // MARK: - Access to the Model

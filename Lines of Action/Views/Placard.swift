@@ -47,6 +47,9 @@ struct Placard: View {
     private let fontSize: Font = .body
     private let contentPadding: CGFloat = 10
     private let cornerRadius: CGFloat = 10
-    private let borderColor: Color = .yellow
     private let borderWidth: CGFloat = 2
+    
+    private var borderColor: Color {
+        viewModel.theme.highlightColor
+    }
 }

@@ -14,6 +14,7 @@ struct Game: View {
     @ObservedObject var viewModel: LinesOfActionViewModel
     
     @State private var showSettingsPanel = false
+    @State private var didConcede = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -46,7 +47,7 @@ struct Game: View {
                 GameButton("Show Last") { self.viewModel.showLastMove = true }
                     .disabled(viewModel.showLastMove || !viewModel.piecesHaveBeenMoved)
                 
-                GameButton("Concede") { self.viewModel.concede() }
+                GameButton("Concede") { self.didConcede = true }
             }
             .padding(.horizontal)
             .disabled(viewModel.gameIsOver)
@@ -65,6 +66,13 @@ struct Game: View {
         .sheet(isPresented: $showSettingsPanel) {
             GameSettings().environmentObject(self.viewModel)
         }
+        .alert(isPresented: $didConcede) {
+            Alert(
+                title: Text("Concede this game?"),
+                primaryButton: .default(Text("Concede")) { self.viewModel.concede() },
+                secondaryButton: .cancel()
+            )
+        }
     }
     
     // MARK: - Drawing Constants
@@ -78,7 +86,7 @@ struct Game: View {
     }
 }
 
-struct GameButton: View {
+fileprivate struct GameButton: View {
     let label: String
     let action: () -> Void
     
