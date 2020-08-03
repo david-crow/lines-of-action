@@ -33,6 +33,7 @@ struct GameSettings: View {
                 Section(header: Text("Options")) {
                     Toggle(isOn: $viewModel.showValidMoves) { Text("Show Valid Moves") }
                     Toggle(isOn: $viewModel.allowUndo) { Text("Enable Undo Button") }
+                    Toggle(isOn: $viewModel.animateMoves) { Text("Animate Movement") }
                 }
                 
                 Section(header: Text("Theme")) {

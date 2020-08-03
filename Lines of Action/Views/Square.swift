@@ -33,15 +33,15 @@ struct Square: View {
     }
     
     private var isSelected: Bool {
-        !viewModel.gameIsOver && viewModel.isSelected(x: col, y: row)
+        viewModel.gameMode == .playing && viewModel.isSelected(x: col, y: row)
     }
     
     private var isLastMove: Bool {
-        !viewModel.gameIsOver && viewModel.showLastMove && viewModel.isLastMove(x: col, y: row)
+        viewModel.gameMode == .playing && viewModel.showingLastMove && viewModel.isLastMove(x: col, y: row)
     }
     
     private var isDestination: Bool {
-        !viewModel.gameIsOver && viewModel.showValidMoves && viewModel.canMoveTo(x: col, y: row)
+        viewModel.gameMode == .playing && viewModel.showValidMoves && viewModel.canMoveTo(x: col, y: row)
     }
 
     // MARK: - Drawing Constants

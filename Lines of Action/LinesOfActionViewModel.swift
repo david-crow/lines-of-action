@@ -15,15 +15,15 @@ class LinesOfActionViewModel: ObservableObject {
     
     @Published var playerName: String = "Player 1"
     @Published var opponentName: String = "Player 2"
-    @Published var didAnalyze: Bool = false
-    @Published var theme: Theme = Theme.themes.randomElement()!
+    @Published var theme: Theme = Theme.themes[0]
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true
-    @Published var showLastMove: Bool = false {
+    @Published var animateMoves: Bool = true
+    @Published var showingLastMove: Bool = false {
         didSet {
-            if showLastMove {
+            if showingLastMove {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
-                    self.showLastMove = false
+                    self.showingLastMove = false
                 })
             }
         }
@@ -45,7 +45,19 @@ class LinesOfActionViewModel: ObservableObject {
         }
     }
     
+    var canMakePreviousMove: Bool {
+        model.moveCounter >= 0
+    }
+    
+    var canMakeNextMove: Bool {
+        model.moveCounter < model.moves.count - 1
+    }
+    
     // MARK: - Access to the Model
+    
+    var gameMode: LinesOfAction.GameMode {
+        model.gameMode
+    }
     
     var winner: LinesOfAction.Player? {
         model.winner
@@ -53,10 +65,6 @@ class LinesOfActionViewModel: ObservableObject {
     
     var piecesHaveBeenMoved: Bool {
         model.moves.count > 0
-    }
-    
-    var gameIsOver: Bool {
-        model.winner != nil
     }
     
     var boardSize: Int {
@@ -95,7 +103,10 @@ class LinesOfActionViewModel: ObservableObject {
     
     func resetGame() {
         model = LinesOfAction()
-        didAnalyze = false
+    }
+    
+    func analyze() {
+        model.analyze()
     }
     
     func concede() {
@@ -104,6 +115,14 @@ class LinesOfActionViewModel: ObservableObject {
     
     func undo() {
         model.undo()
+    }
+    
+    func previousMove() {
+        model.previousMove()
+    }
+    
+    func nextMove() {
+        model.nextMove()
     }
     
     func selectSquare(x: Int, y: Int) {

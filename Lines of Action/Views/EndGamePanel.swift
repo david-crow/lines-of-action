@@ -13,47 +13,44 @@ struct EndGamePanel: View {
     
     @EnvironmentObject var viewModel: LinesOfActionViewModel
     
-    let size: CGSize
-    
     var body: some View {
         VStack {
-            HStack {
-                PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
-                Text("Winner!").font(winnerFont).foregroundColor(.black)
-                PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
-            }
-            
-            Group {
-                Button("New Game") { self.viewModel.resetGame() }
-                Button("Analysis") { self.viewModel.didAnalyze = true }
-                Button("Main Menu") { self.presentation.wrappedValue.dismiss() }
-            }
-            .padding(buttonPadding)
+            PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
+            Text("Winner!").font(winnerFont).foregroundColor(.black)
+            Text("\(winnerName)").font(nameFont).foregroundColor(.black)
         }
-        .padding()
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color.white)
-                    .shadow(radius: 3)
+        .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, verticalPadding)
+        .overlay(
+            VStack {
+                HStack {
+                    Button(action: {},
+                           label: { Image(systemName: "square.and.arrow.up").imageScale(.large) })
+                    Spacer()
+                    Button(action: { self.viewModel.analyze() },
+                           label: { Image(systemName: "xmark").imageScale(.large) })
+                }
+                
+                Spacer()
             }
+            .padding()
+        )
+        .background(
+            RoundedRectangle(cornerRadius: cornerRadius).fill(Color.white)
         )
     }
     
     // MARK: - Drawing Constants
     
-    private let cornerRadius: CGFloat = 10
-    private let strokeWidth: CGFloat = 2
-    private let pieceDiameter: CGFloat = 40
     private let winnerFont: Font = Font.title.weight(.semibold)
-    private let buttonPadding: CGFloat = 5
+    private let nameFont: Font = Font.subheadline.weight(.semibold)
+    private let cornerRadius: CGFloat = 15
+    private let pieceDiameter: CGFloat = 70
+    private let horizontalPadding: CGFloat = 40
+    private let verticalPadding: CGFloat = 20
     
-    private var panelWidth: CGFloat {
-        5 / 8 * min(size.width, size.height)
-    }
-    
-    private var panelHeight: CGFloat {
-        3 / 8 * min(size.width, size.height)
+    private var winnerName: String {
+        viewModel.winner == .player ? viewModel.name(for: .player) : viewModel.name(for: .opponent)
     }
     
     private var pieceColor: Color {

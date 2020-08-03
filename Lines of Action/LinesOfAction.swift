@@ -13,9 +13,11 @@ struct LinesOfAction {
     
     let boardSize: Int
     
+    private(set) var gameMode: GameMode = .playing
     private(set) var winner: Player?
     private(set) var activePlayer: Player = .player
     private(set) var moves: [Move] = []
+    private(set) var moveCounter: Int = -1
     private(set) var squares: [Square]
     private(set) var pieces: [Piece]
     private(set) var selectedPieceIndex: Int? {
@@ -107,8 +109,13 @@ struct LinesOfAction {
     
     // MARK: - Mutating Instance Methods
     
+    mutating func analyze() {
+        gameMode = .analysis
+    }
+    
     mutating func concede() {
         winner = (activePlayer == .player ? .opponent : .player)
+        gameMode = .gameOver
     }
     
     mutating func select(_ piece: Piece) {
@@ -133,6 +140,7 @@ struct LinesOfAction {
             }
             
             moves.append(move)
+            moveCounter += 1
             pieces[selectedPieceIndex!].location = newLocation
             selectedPieceIndex = nil
             activePlayer = opponent(for: activePlayer)
@@ -151,6 +159,41 @@ struct LinesOfAction {
             }
             
             activePlayer = opponent(for: activePlayer)
+            moveCounter -= 1
+        }
+    }
+    
+    mutating func previousMove() {
+        if moveCounter >= 0 {
+            let move = moves[moveCounter]
+            let piece = pieceAt(move.newLocation)!
+            let index = pieces.firstIndex(matching: piece)!
+            pieces[index].location = move.oldLocation
+            
+            if move.capturedPiece {
+                pieces.append(Piece(player: activePlayer, location: move.newLocation))
+            }
+            
+            activePlayer = opponent(for: activePlayer)
+            moveCounter -= 1
+        }
+    }
+    
+    mutating func nextMove() {
+        if moveCounter < moves.count - 1 {
+            let move = moves[moveCounter + 1]
+            
+            if move.capturedPiece {
+                let capturedPiece = pieceAt(move.newLocation)!
+                let capturedIndex = pieces.firstIndex(matching: capturedPiece)!
+                pieces.remove(at: capturedIndex)
+            }
+            
+            let piece = pieceAt(move.oldLocation)!
+            let index = pieces.firstIndex(matching: piece)!
+            pieces[index].location = move.newLocation
+            activePlayer = opponent(for: activePlayer)
+            moveCounter += 1
         }
     }
     
@@ -309,6 +352,10 @@ struct LinesOfAction {
         let player: Player
         var location: Square
         var isSelected = false
+    }
+    
+    enum GameMode {
+        case playing, gameOver, analysis
     }
     
     enum Player: String {

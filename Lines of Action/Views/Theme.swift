@@ -17,7 +17,7 @@ struct Theme: Identifiable, Hashable {
     let highlightColor: Color = .yellow
     let id: UUID = UUID()
     
-    static var themes = [
+    static let themes = [
         Theme(
             name: "Classic",
             playerColor: Color(#colorLiteral(red: 0.2039215686, green: 0.5960784314, blue: 0.8588235294, alpha: 1)),
@@ -34,8 +34,8 @@ struct Theme: Identifiable, Hashable {
             name: "Desert",
             playerColor: Color(#colorLiteral(red: 0.07450980392, green: 0.5921568627, blue: 0.6274509804, alpha: 1)),
             opponentColor: Color(#colorLiteral(red: 0.7960784314, green: 0.2705882353, blue: 0.2392156863, alpha: 1)),
-            firstSquareColor: Color(#colorLiteral(red: 0.9529411765, green: 0.6980392157, blue: 0.3450980392, alpha: 1)),
-            secondSquareColor: Color(#colorLiteral(red: 0.9803921569, green: 0.7647058824, blue: 0.5058823529, alpha: 1))),
+            firstSquareColor: Color(#colorLiteral(red: 0.8823529412, green: 0.7490196078, blue: 0.5725490196, alpha: 1)),
+            secondSquareColor: Color(#colorLiteral(red: 0.9490196078, green: 0.8235294118, blue: 0.662745098, alpha: 1))),
         Theme(
             name: "Glacier",
             playerColor: Color(#colorLiteral(red: 0.1294117647, green: 0.3803921569, blue: 0.5490196078, alpha: 1)),
