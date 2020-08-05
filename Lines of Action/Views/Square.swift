@@ -29,19 +29,23 @@ struct Square: View {
             SquareEmphasis(for: isDestination, color: highlightColor)
         }
         .overlay(Rectangle().stroke())
-        .onTapGesture { self.viewModel.selectSquare(x: self.col, y: self.row) }
+        .onTapGesture { viewModel.selectSquare(x: col, y: row) }
+    }
+    
+    private var canShowEmphasis: Bool {
+        viewModel.winner == nil && viewModel.gameMode == .playing
     }
     
     private var isSelected: Bool {
-        viewModel.gameMode == .playing && viewModel.isSelected(x: col, y: row)
+        canShowEmphasis && viewModel.isSelected(x: col, y: row)
     }
     
     private var isLastMove: Bool {
-        viewModel.gameMode == .playing && viewModel.showingLastMove && viewModel.isLastMove(x: col, y: row)
+        canShowEmphasis && viewModel.showingLastMove && viewModel.isLastMove(x: col, y: row)
     }
     
     private var isDestination: Bool {
-        viewModel.gameMode == .playing && viewModel.showValidMoves && viewModel.canMoveTo(x: col, y: row)
+        canShowEmphasis && viewModel.showValidMoves && viewModel.canMoveTo(x: col, y: row)
     }
 
     // MARK: - Drawing Constants
@@ -51,7 +55,7 @@ struct Square: View {
     }
 
     private var selectedColor: Color {
-        viewModel.activeColor
+        viewModel.isActive(.player) ? viewModel.theme.playerColor : viewModel.theme.opponentColor
     }
 
     private var highlightColor: Color {

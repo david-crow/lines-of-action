@@ -8,19 +8,29 @@
 
 import Foundation
 
-struct LinesOfAction {
+class LinesOfAction: ObservableObject {
     // MARK: - Variables
     
+    let gameType: GameType
     let boardSize: Int
     
-    private(set) var gameMode: GameMode = .playing
-    private(set) var winner: Player?
-    private(set) var activePlayer: Player = .player
-    private(set) var moves: [Move] = []
-    private(set) var moveCounter: Int = -1
-    private(set) var squares: [Square]
-    private(set) var pieces: [Piece]
-    private(set) var selectedPieceIndex: Int? {
+    @Published private(set) var gameMode: GameMode = .playing
+    @Published private(set) var activePlayer: Player = .player
+    @Published private(set) var moves: [Move] = []
+    @Published private(set) var moveCounter: Int = -1
+    @Published private(set) var squares: [Square]
+    @Published private(set) var pieces: [Piece]
+    @Published private(set) var winner: Player? {
+        didSet {
+            if winner != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
+                    gameMode = .gameOver
+                })
+            }
+        }
+    }
+    
+    private var selectedPieceIndex: Int? {
         get { pieces.indices.filter { pieces[$0].isSelected }.only }
         set {
             for index in pieces.indices {
@@ -31,7 +41,8 @@ struct LinesOfAction {
 
     // MARK: - Initializers
     
-    init(boardSize: Int = 8) {
+    init(gameType: GameType, boardSize: Int = 8) {
+        self.gameType = gameType
         self.boardSize = boardSize
         (pieces, squares) = LinesOfAction.createGame(size: boardSize)
     }
@@ -63,7 +74,27 @@ struct LinesOfAction {
         return (pieces, squares)
     }
     
-    // MARK: - Instance Methods
+    // MARK: - Accessors
+    
+    var piecesHaveBeenMoved: Bool {
+        moves.count > 0
+    }
+    
+    var inFinalState: Bool {
+        moveCounter == moves.count - 1
+    }
+    
+    var canMakePreviousMove: Bool {
+        moveCounter >= 0
+    }
+    
+    var canMakeNextMove: Bool {
+        moveCounter < moves.count - 1
+    }
+    
+    func isActive(_ player: LinesOfAction.Player) -> Bool {
+        player == activePlayer
+    }
     
     func isSelected(_ x: Int, _ y: Int) -> Bool {
         if let index = selectedPieceIndex {
@@ -80,24 +111,6 @@ struct LinesOfAction {
         return false
     }
     
-    func pieceAt(_ x: Int, _ y: Int) -> Piece? {
-        for piece in pieces {
-            if piece.location.x == x && piece.location.y == y {
-                return piece
-            }
-        }
-        return nil
-    }
-    
-    func pieceAt(_ location: Square) -> Piece? {
-        for piece in pieces {
-            if piece.location.x == location.x && piece.location.y == location.y {
-                return piece
-            }
-        }
-        return nil
-    }
-    
     func canMoveTo(_ x: Int, _ y: Int) -> Bool {
         if let index = selectedPieceIndex {
             let piece = pieces[index]
@@ -107,48 +120,33 @@ struct LinesOfAction {
         return false
     }
     
-    // MARK: - Mutating Instance Methods
+    // MARK: - Mutators
     
-    mutating func analyze() {
+    func concede() {
+        winner = (activePlayer == .player ? .opponent : .player)
+    }
+    
+    func analyze() {
         gameMode = .analysis
     }
     
-    mutating func concede() {
-        winner = (activePlayer == .player ? .opponent : .player)
-        gameMode = .gameOver
-    }
-    
-    mutating func select(_ piece: Piece) {
-        if let index = pieces.firstIndex(matching: piece) {
-            selectedPieceIndex = piece.isSelected ? nil : index
-        }
-    }
-    
-    mutating func deselectAllPieces() {
-        selectedPieceIndex = nil
-    }
-    
-    mutating func moveTo(_ x: Int, _ y: Int, newMove: Bool = true) {
-        if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
-            let newLocation = Square(x, y)
-            let oldLocation = pieces[selectedPieceIndex!].location
-            var move = Move(oldLocation: oldLocation, newLocation: newLocation)
-            
-            if let capturedPiece = pieceAt(newLocation), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
-                pieces.remove(at: capturedIndex)
-                move.capturedPiece = true
+    func selectSquare(_ x: Int, _ y: Int) {
+        if let tappedPiece = pieceAt(x, y) {
+            if selectedPieceIndex != nil && canMoveTo(x, y) {
+                moveTo(x, y)
+            } else if activePlayer == tappedPiece.player {
+                select(tappedPiece)
             }
-            
-            moves.append(move)
-            moveCounter += 1
-            pieces[selectedPieceIndex!].location = newLocation
-            selectedPieceIndex = nil
-            activePlayer = opponent(for: activePlayer)
-            winner = determineWinner()
+        } else if selectedPieceIndex != nil {
+            if canMoveTo(x, y) {
+                moveTo(x, y)
+            } else {
+                deselectAllPieces()
+            }
         }
     }
     
-    mutating func undo() {
+    func undo() {
         if let previousMove = moves.popLast() {
             let piece = pieceAt(previousMove.newLocation)!
             let index = pieces.firstIndex(matching: piece)!
@@ -163,7 +161,7 @@ struct LinesOfAction {
         }
     }
     
-    mutating func previousMove() {
+    func previousMove() {
         if moveCounter >= 0 {
             let move = moves[moveCounter]
             let piece = pieceAt(move.newLocation)!
@@ -179,7 +177,7 @@ struct LinesOfAction {
         }
     }
     
-    mutating func nextMove() {
+    func nextMove() {
         if moveCounter < moves.count - 1 {
             let move = moves[moveCounter + 1]
             
@@ -197,10 +195,66 @@ struct LinesOfAction {
         }
     }
     
-    // MARK: - Private Instance Methods
+    // MARK: - Helpers
     
     private func opponent(for player: Player) -> Player {
         player == .player ? .opponent : .player
+    }
+    
+    private func playerPieces(for player: Player) -> [Piece] {
+        pieces.filter { $0.player == player }
+    }
+    
+    private func opponentPieces(for player: Player) -> [Piece] {
+        pieces.filter { $0.player != player }
+    }
+    
+    private func pieceAt(_ x: Int, _ y: Int) -> Piece? {
+        for piece in pieces {
+            if piece.location.x == x && piece.location.y == y {
+                return piece
+            }
+        }
+        return nil
+    }
+    
+    private func pieceAt(_ location: Square) -> Piece? {
+        for piece in pieces {
+            if piece.location.x == location.x && piece.location.y == location.y {
+                return piece
+            }
+        }
+        return nil
+    }
+    
+    private func select(_ piece: Piece) {
+        if let index = pieces.firstIndex(matching: piece) {
+            selectedPieceIndex = piece.isSelected ? nil : index
+        }
+    }
+    
+    private func deselectAllPieces() {
+        selectedPieceIndex = nil
+    }
+    
+    private func moveTo(_ x: Int, _ y: Int, newMove: Bool = true) {
+        if selectedPieceIndex != nil, canMove(pieces[selectedPieceIndex!], to: Square(x, y)) {
+            let newLocation = Square(x, y)
+            let oldLocation = pieces[selectedPieceIndex!].location
+            var move = Move(oldLocation: oldLocation, newLocation: newLocation)
+            
+            if let capturedPiece = pieceAt(newLocation), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
+                pieces.remove(at: capturedIndex)
+                move.capturedPiece = true
+            }
+            
+            moves.append(move)
+            moveCounter += 1
+            pieces[selectedPieceIndex!].location = newLocation
+            selectedPieceIndex = nil
+            activePlayer = opponent(for: activePlayer)
+            winner = determineWinner()
+        }
     }
     
     private func canMove(_ piece: Piece, to location: Square) -> Bool {
@@ -248,14 +302,6 @@ struct LinesOfAction {
         }
         
         return squaresOnPath.intersection(opponentSquares).count > 0
-    }
-    
-    private func playerPieces(for player: Player) -> [Piece] {
-        pieces.filter { $0.player == player }
-    }
-    
-    private func opponentPieces(for player: Player) -> [Piece] {
-        pieces.filter { $0.player != player }
     }
     
     private func squaresInColumnBetween(a: Square, b: Square) -> [Square] {
@@ -354,11 +400,17 @@ struct LinesOfAction {
         var isSelected = false
     }
     
+    enum GameType: String {
+        case solo = "Single Player",
+             offline = "Offline Multiplayer",
+             online = "Online Multiplayer"
+    }
+    
     enum GameMode {
         case playing, gameOver, analysis
     }
     
-    enum Player: String {
+    enum Player {
         case player, opponent
     }
 }

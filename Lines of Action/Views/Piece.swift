@@ -20,14 +20,19 @@ struct Piece: View {
     }
     
     var body: some View {
-        PieceIcon(color: color, maxDiameter: squareSize).position(pieceLocation)
+        PieceIcon(colors: (color, highlightColor), maxDiameter: squareSize).position(pieceLocation)
     }
+    
+    // MARK: - Drawing Constants
     
     private var color: Color {
         piece.player == .player ? viewModel.theme.playerColor : viewModel.theme.opponentColor
     }
     
-    // MARK: - Drawing Constants
+    private var highlightColor: Color {
+        let isHighlighted = piece.player == viewModel.winner && viewModel.inFinalState
+        return isHighlighted ? viewModel.theme.highlightColor : .clear
+    }
     
     private var squareSize: CGFloat {
         min(size.width, size.height) / CGFloat(viewModel.boardSize)
@@ -42,10 +47,29 @@ struct Piece: View {
 
 struct PieceIcon: View {
     let color: Color
+    let highlightColor: Color?
     let maxDiameter: CGFloat
+    
+    init(color: Color, maxDiameter: CGFloat) {
+        self.color = color
+        self.highlightColor = nil
+        self.maxDiameter = maxDiameter
+    }
+    
+    init(colors: (color: Color, highlightColor: Color?), maxDiameter: CGFloat) {
+        self.color = colors.color
+        self.highlightColor = colors.highlightColor
+        self.maxDiameter = maxDiameter
+    }
     
     var body: some View {
         ZStack {
+            if highlightColor != nil {
+                Circle()
+                    .fill(highlightColor!)
+                    .frame(width: highlightSize, height: highlightSize)
+            }
+            
             Circle()
                 .fill(color)
                 .frame(width: outerPieceSize, height: outerPieceSize)
@@ -56,15 +80,19 @@ struct PieceIcon: View {
                 .fill(color)
                 .frame(width: innerPieceSize, height: innerPieceSize)
             Star(corners: numStarCorners, smoothness: starSmoothness)
-                .fill(Color.white)
+                .foregroundColor(.white)
                 .frame(width: emblemPieceSize, height: emblemPieceSize)
         }
     }
     
     // MARK: - Drawing Constants
     
-    private let numStarCorners = 5
-    private let starSmoothness: CGFloat = 0.45
+    private let numStarCorners: Int = 8
+    private let starSmoothness: CGFloat = 0.4
+    
+    private var highlightSize: CGFloat {
+        0.9 * maxDiameter
+    }
     
     private var outerPieceSize: CGFloat {
         0.8 * maxDiameter
@@ -79,6 +107,6 @@ struct PieceIcon: View {
     }
     
     private var emblemPieceSize: CGFloat {
-        0.7 * innerPieceSize
+        0.8 * innerPieceSize
     }
 }

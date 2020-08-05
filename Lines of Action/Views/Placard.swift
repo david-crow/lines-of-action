@@ -38,7 +38,8 @@ struct Placard: View {
     }
     
     private func isAtMove(_ player: LinesOfAction.Player) -> Bool {
-        viewModel.isActive(player) && viewModel.gameMode != .gameOver
+        viewModel.isActive(player)
+            && (viewModel.winner == nil || !viewModel.inFinalState)
     }
     
     // MARK: - Drawing Constants

@@ -27,7 +27,7 @@ struct EndGamePanel: View {
                     Button(action: {},
                            label: { Image(systemName: "square.and.arrow.up").imageScale(.large) })
                     Spacer()
-                    Button(action: { self.viewModel.analyze() },
+                    Button(action: { viewModel.analyze() },
                            label: { Image(systemName: "xmark").imageScale(.large) })
                 }
                 

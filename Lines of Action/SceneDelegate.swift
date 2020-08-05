@@ -9,6 +9,7 @@
 import UIKit
 import SwiftUI
 
+@available(iOS 14.0, *)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -20,8 +21,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         // Create the SwiftUI view that provides the window contents.
         let contentView = Home()
-//        let contentView = Game(viewModel: LinesOfActionViewModel())
-//        let contentView = GameSettings().environmentObject(LinesOfActionViewModel())
+//        let contentView = Game(viewModel: LinesOfActionViewModel(gameType: .offline))
+//        let contentView = GameSettings().environmentObject(LinesOfActionViewModel(gameType: .offline))
 
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {

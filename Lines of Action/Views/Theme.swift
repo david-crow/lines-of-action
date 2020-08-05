@@ -25,13 +25,7 @@ struct Theme: Identifiable, Hashable {
             firstSquareColor: Color(#colorLiteral(red: 0.7843137255, green: 0.7843137255, blue: 0.7843137255, alpha: 1)),
             secondSquareColor: Color(#colorLiteral(red: 0.9019607843, green: 0.9019607843, blue: 0.9019607843, alpha: 1))),
         Theme(
-            name: "Canyon",
-            playerColor: Color(#colorLiteral(red: 0.7568627451, green: 0.4, blue: 0.1960784314, alpha: 1)),
-            opponentColor: Color(#colorLiteral(red: 0.2745098039, green: 0.4039215686, blue: 0.4980392157, alpha: 1)),
-            firstSquareColor: Color(#colorLiteral(red: 0.5921568627, green: 0.6039215686, blue: 0.6039215686, alpha: 1)),
-            secondSquareColor: Color(#colorLiteral(red: 0.8156862745, green: 0.8274509804, blue: 0.831372549, alpha: 1))),
-        Theme(
-            name: "Desert",
+            name: "Dune",
             playerColor: Color(#colorLiteral(red: 0.07450980392, green: 0.5921568627, blue: 0.6274509804, alpha: 1)),
             opponentColor: Color(#colorLiteral(red: 0.7960784314, green: 0.2705882353, blue: 0.2392156863, alpha: 1)),
             firstSquareColor: Color(#colorLiteral(red: 0.8823529412, green: 0.7490196078, blue: 0.5725490196, alpha: 1)),
@@ -48,6 +42,12 @@ struct Theme: Identifiable, Hashable {
             opponentColor: Color(#colorLiteral(red: 0.1960784314, green: 0.1960784314, blue: 0.1960784314, alpha: 1)),
             firstSquareColor: Color(#colorLiteral(red: 0.6470588235, green: 0.7333333333, blue: 0.5215686275, alpha: 1)),
             secondSquareColor: Color(#colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.8274509804, alpha: 1))),
+        Theme(
+            name: "Mesa",
+            playerColor: Color(#colorLiteral(red: 0.7568627451, green: 0.4, blue: 0.1960784314, alpha: 1)),
+            opponentColor: Color(#colorLiteral(red: 0.2745098039, green: 0.4039215686, blue: 0.4980392157, alpha: 1)),
+            firstSquareColor: Color(#colorLiteral(red: 0.5921568627, green: 0.6039215686, blue: 0.6039215686, alpha: 1)),
+            secondSquareColor: Color(#colorLiteral(red: 0.8156862745, green: 0.8274509804, blue: 0.831372549, alpha: 1))),
         Theme(
             name: "Pond",
             playerColor: Color(#colorLiteral(red: 0.6039215686, green: 0.6196078431, blue: 0.2549019608, alpha: 1)),
@@ -71,11 +71,11 @@ struct ThemeView: View {
     var body: some View {
         VStack {
             ThemeBoard(for: theme, size: size)
-            Text(theme.name)
+            Text(theme.name).padding(.bottom, 5)
             Image(systemName: "checkmark").opacity(theme == viewModel.theme ? 1 : 0)
         }
         .padding()
-        .onTapGesture { self.viewModel.theme = self.theme }
+        .onTapGesture { viewModel.theme = theme }
     }
     
     private struct ThemeBoard: View {
@@ -94,11 +94,11 @@ struct ThemeView: View {
                         ForEach(0..<2) { col in
                             ZStack {
                                 Rectangle()
-                                    .fill(self.colorForSquare(x: col, y: row))
+                                    .fill(colorForSquare(x: col, y: row))
                                     .overlay(Rectangle().stroke())
-                                    .frame(width: self.squareSize, height: self.squareSize)
+                                    .frame(width: squareSize, height: squareSize)
                                 
-                                self.piece(x: col, y: row, maxDiameter: self.squareSize)
+                                piece(x: col, y: row, maxDiameter: squareSize)
                             }
                         }
                     }

@@ -8,56 +8,65 @@
 
 import SwiftUI
 
+@available(iOS 14.0, *)
 struct GameSettings: View {
     @Environment(\.presentationMode) var presentation
     
     @EnvironmentObject var viewModel: LinesOfActionViewModel
     
-    @State private var playerName: String = ""
-    @State private var opponentName: String = ""
-    
     var body: some View {
         GeometryReader { geometry in
-            self.body(for: geometry.size)
-        }
-    }
-    
-    private func body(for size: CGSize) -> some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Names")) {
-                    TextField("Player 1", text: $viewModel.playerName)
-                    TextField("Player 2", text: $viewModel.opponentName)
-                }
-                
-                Section(header: Text("Options")) {
-                    Toggle(isOn: $viewModel.showValidMoves) { Text("Show Valid Moves") }
-                    Toggle(isOn: $viewModel.allowUndo) { Text("Enable Undo Button") }
-                    Toggle(isOn: $viewModel.animateMoves) { Text("Animate Movement") }
-                }
-                
-                Section(header: Text("Theme")) {
-                    ScrollView(.horizontal) {
-                        HStack {
-                            ForEach(Theme.themes) { theme in
-                                ThemeView(for: theme, size: size).environmentObject(self.viewModel)
+            NavigationView {
+                Form {
+                    Section(header: Text("Names")) {
+                        TextField("Player 1", text: $viewModel.playerName) {
+                            UIApplication.shared.endEditing()
+                        }
+                        TextField("Player 2", text: $viewModel.opponentName) {
+                            UIApplication.shared.endEditing()
+                        }
+                    }
+                    
+                    Section(header: Text("Options")) {
+                        Toggle(isOn: $viewModel.showValidMoves) { Text("Show Valid Moves") }
+                        Toggle(isOn: $viewModel.allowUndo) { Text("Enable Undo Button") }
+                        Toggle(isOn: $viewModel.animateMoves) { Text("Animate Movement") }
+                    }
+                    
+                    Section(header: Text("Theme")) {
+                        ScrollView(.horizontal) {
+                            ScrollViewReader { scrollView in
+                                themes(for: geometry.size)
+                                .onAppear {
+                                    scrollView.scrollTo(viewModel.theme)
+                                }
                             }
                         }
                     }
                 }
+                .navigationBarTitle("Settings", displayMode: .inline)
+                .navigationBarItems(trailing: done)
             }
-            .navigationBarTitle("Settings", displayMode: .inline)
-            .navigationBarItems(trailing: done)
-        }
-        .onAppear {
-            self.playerName = self.viewModel.name(for: .player)
-            self.opponentName = self.viewModel.name(for: .opponent)
         }
     }
     
     private var done: some View {
         Button("Done") {
-            self.presentation.wrappedValue.dismiss()
+            presentation.wrappedValue.dismiss()
         }
+    }
+    
+    private func themes(for size: CGSize) -> some View {
+        HStack {
+            ForEach(Theme.themes, id: \.self) { theme in
+                ThemeView(for: theme, size: size).environmentObject(viewModel)
+            }
+        }
+    }
+}
+
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

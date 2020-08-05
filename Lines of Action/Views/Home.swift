@@ -8,21 +8,18 @@
 
 import SwiftUI
 
+@available(iOS 14.0, *)
 struct Home: View {
     var body: some View {
-        GeometryReader { geometry in
-            self.body(for: geometry.size)
-        }
-    }
-    
-    private func body(for size: CGSize) -> some View {
         NavigationView {
             VStack {
                 ZStack {
                     PieceIcon(color: firstLogoColor, maxDiameter: logoDiameter)
+                        .rotationEffect(firstPieceRotation)
                         .offset(CGSize(width: -logoOffset, height: -logoOffset))
                     
                     PieceIcon(color: secondLogoColor, maxDiameter: logoDiameter)
+                        .rotationEffect(secondPieceRotation)
                         .offset(CGSize(width: logoOffset, height: 0))
                 }
                 
@@ -30,15 +27,15 @@ struct Home: View {
                     .font(Font.largeTitle.weight(.heavy))
                     .padding(.vertical, titlePadding)
                 
-                NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
+                NavigationLink(destination: Game(type: .solo)) {
                     NavigationButton(label: "Single Player")
                 }
                 
-                NavigationLink(destination: Game(viewModel: LinesOfActionViewModel())) {
+                NavigationLink(destination: Game(type: .offline)) {
                     NavigationButton(label: "Offline Multiplayer")
                 }
                 
-                NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
+                NavigationLink(destination: Game(type: .online)) {
                     NavigationButton(label: "Online Multiplayer")
                 }
                 
@@ -59,13 +56,15 @@ struct Home: View {
     private let logoDiameter: CGFloat = 200
     private let logoOffset: CGFloat = 40
     private let titlePadding: CGFloat = 25
+    private let firstPieceRotation = Angle(degrees: 22.5)
+    private let secondPieceRotation = Angle(degrees: 0)
     
     private var firstLogoColor: Color {
-        Theme.themes.filter { $0.name == "Classic" }.only!.playerColor
+        Theme.themes[0].playerColor
     }
     
     private var secondLogoColor: Color {
-        Theme.themes.filter { $0.name == "Classic" }.only!.opponentColor
+        Theme.themes[0].opponentColor
     }
 }
 

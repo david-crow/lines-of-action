@@ -13,28 +13,24 @@ struct Board: View {
         
     var body: some View {
         GeometryReader { geometry in
-            self.body(for: geometry.size)
-        }
-    }
-    
-    private func body(for size: CGSize) -> some View {
-        ZStack {
-            VStack(spacing: 0) {
-                ForEach(0..<self.viewModel.boardSize) { row in
-                    HStack(spacing: 0) {
-                        ForEach(0..<self.viewModel.boardSize) { col in
-                            Square(col, row, size: size).environmentObject(self.viewModel)
+            ZStack {
+                VStack(spacing: 0) {
+                    ForEach(0..<viewModel.boardSize) { row in
+                        HStack(spacing: 0) {
+                            ForEach(0..<viewModel.boardSize) { col in
+                                Square(col, row, size: geometry.size).environmentObject(viewModel)
+                            }
                         }
                     }
                 }
-            }
 
-            ForEach(viewModel.pieces, id: \.self) { piece in
-                Piece(piece, size: size)
-                    .environmentObject(self.viewModel)
-                    .allowsHitTesting(false)
+                ForEach(viewModel.pieces, id: \.self) { piece in
+                    Piece(piece, size: geometry.size)
+                        .environmentObject(viewModel)
+                        .allowsHitTesting(false)
+                }
             }
+            .aspectRatio(1, contentMode: .fit)
         }
-        .aspectRatio(1, contentMode: .fit)
     }
 }

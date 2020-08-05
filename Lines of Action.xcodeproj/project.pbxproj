@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4502982D24D526A00083B3A3 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4502982C24D526A00083B3A3 /* Agent.swift */; };
 		450787E324B9542400EDB0B7 /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450787E224B9542400EDB0B7 /* Board.swift */; };
 		450787E524B9544200EDB0B7 /* Placard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450787E424B9544200EDB0B7 /* Placard.swift */; };
 		450C17D424B7C89700391C2B /* Square.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450C17D324B7C89700391C2B /* Square.swift */; };
@@ -30,7 +29,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4502982C24D526A00083B3A3 /* Agent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Agent.swift; sourceTree = "<group>"; };
 		450787E224B9542400EDB0B7 /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		450787E424B9544200EDB0B7 /* Placard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Placard.swift; sourceTree = "<group>"; };
 		450C17D324B7C89700391C2B /* Square.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Square.swift; sourceTree = "<group>"; };
@@ -111,7 +109,6 @@
 			isa = PBXGroup;
 			children = (
 				450C17D724B7C9B200391C2B /* Views */,
-				4502982C24D526A00083B3A3 /* Agent.swift */,
 				45D8C9CF24B16C3F0014A197 /* LinesOfAction.swift */,
 				45D8C9D124B16C9D0014A197 /* LinesOfActionViewModel.swift */,
 				450C17D824B7C9CF00391C2B /* Extensions */,
@@ -160,7 +157,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1150;
-				LastUpgradeCheck = 1150;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "David Crow";
 				TargetAttributes = {
 					45D8C9B724B169E90014A197 = {
@@ -204,7 +201,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4502982D24D526A00083B3A3 /* Agent.swift in Sources */,
 				45D8C9D024B16C3F0014A197 /* LinesOfAction.swift in Sources */,
 				452FED1324CE1CAC00C415FD /* Home.swift in Sources */,
 				45D8C9BC24B169E90014A197 /* AppDelegate.swift in Sources */,
@@ -264,6 +260,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -324,6 +321,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

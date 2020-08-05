@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+@available(iOS 14.0, *)
 struct Game: View {
     @Environment(\.presentationMode) var presentation
     
@@ -16,73 +17,84 @@ struct Game: View {
     @State private var showSettingsPanel = false
     @State private var didConcede = false
     
+    init(type: LinesOfAction.GameType) {
+        viewModel = LinesOfActionViewModel(gameType: type)
+    }
+    
     var body: some View {
         GeometryReader { geometry in
-            self.body(for: geometry.size)
+            ZStack {
+                VStack {
+                    Spacer()
+                    
+                    Placard(viewModel: viewModel)
+                    
+                    Board()
+                        .environmentObject(viewModel)
+                        .allowsHitTesting(canTapBoard)
+                        .frame(maxWidth: UIScreen.main.bounds.width,
+                               maxHeight: UIScreen.main.bounds.width)
+                    
+                    VStack {
+                        if viewModel.gameMode == .playing {
+                            HStack {
+                                GameButton("Undo") { viewModel.undo() }
+                                    .disabled(!canUndo)
+                                GameButton("Show Last") { viewModel.showingLastMove = true }
+                                    .disabled(!canShowLast)
+                                GameButton("Concede") { didConcede = true }
+                            }
+                        } else {
+                            HStack {
+                                GameButton(icon: "arrowtriangle.left") { viewModel.previousMove() }
+                                    .disabled(!canMakePreviousMove)
+                                GameButton(icon: "arrowtriangle.right") { viewModel.nextMove() }
+                                    .disabled(!canMakeNextMove)
+                                GameButton("Best Move") {}
+                            }
+                            .disabled(viewModel.gameMode != .analysis)
+                        }
+                        
+                        GameButton("New Game") { viewModel.resetGame() }
+                            .opacity(viewModel.gameMode == .analysis ? 1 : 0)
+                            .disabled(viewModel.gameMode != .analysis)
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer()
+                }
+                
+                if viewModel.gameMode == .gameOver {
+                    VisualEffectView(effect: UIBlurEffect(style: .regular)).edgesIgnoringSafeArea(.all)
+                    EndGamePanel().environmentObject(viewModel)
+                }
+            }
+            .navigationBarTitle(title, displayMode: .inline)
+            .navigationBarItems(trailing:
+                Button(action: { showSettingsPanel = true }) {
+                    Image(systemName: "gear").imageScale(.large)
+                }
+            )
+            .sheet(isPresented: $showSettingsPanel) {
+                GameSettings().environmentObject(viewModel)
+            }
+            .alert(isPresented: $didConcede) {
+                Alert(
+                    title: Text("Concede this game?"),
+                    primaryButton: .default(Text("Concede")) { viewModel.concede() },
+                    secondaryButton: .cancel()
+                )
+            }
         }
     }
     
-    private func body(for size: CGSize) -> some View {
-        ZStack {
-            VStack {
-                Placard(viewModel: viewModel)
-                
-                Board()
-                    .environmentObject(viewModel)
-                    .allowsHitTesting(viewModel.gameMode == .playing)
-                    .frame(maxWidth: UIScreen.main.bounds.width,
-                           maxHeight: UIScreen.main.bounds.width)
-                
-                VStack {
-                    if viewModel.gameMode == .playing {
-                        HStack {
-                            GameButton("Undo") { self.viewModel.undo() }
-                                .disabled(!canUndo)
-                            GameButton("Show Last") { self.viewModel.showingLastMove = true }
-                                .disabled(!canShowLast)
-                            GameButton("Concede") { self.didConcede = true }
-                        }
-                    } else {
-                        HStack {
-                            GameButton(icon: "arrowtriangle.left") { self.viewModel.previousMove() }
-                                .disabled(!canMakePreviousMove)
-                            GameButton(icon: "arrowtriangle.right") { self.viewModel.nextMove() }
-                                .disabled(!canMakeNextMove)
-                            GameButton("Best Move") {}
-                        }
-                        .disabled(viewModel.gameMode != .analysis)
-                    }
-                    
-                    GameButton("New Game") { self.viewModel.resetGame() }
-                        .opacity(viewModel.gameMode == .analysis ? 1 : 0)
-                        .disabled(viewModel.gameMode != .analysis)
-                }
-                .padding(.horizontal)
-            }
-            .blur(radius: viewModel.gameMode == .gameOver ? blurRadius : 0)
-            
-            if viewModel.gameMode == .gameOver {
-                EndGamePanel()
-                    .environmentObject(viewModel)
-                    .frame(maxWidth: panelWidth(for: size), maxHeight: panelHeight(for: size))
-            }
-        }
-        .navigationBarTitle(viewModel.gameMode == .analysis ? "Analysis" : "Offline Multiplayer", displayMode: .inline)
-        .navigationBarItems(trailing:
-            Button(action: { self.showSettingsPanel = true }) {
-                Image(systemName: "gear").imageScale(.large)
-            }
-        )
-        .sheet(isPresented: $showSettingsPanel) {
-            GameSettings().environmentObject(self.viewModel)
-        }
-        .alert(isPresented: $didConcede) {
-            Alert(
-                title: Text("Concede this game?"),
-                primaryButton: .default(Text("Concede")) { self.viewModel.concede() },
-                secondaryButton: .cancel()
-            )
-        }
+    private var canTapBoard: Bool {
+        viewModel.gameMode == .playing
+            && (viewModel.gameType == .offline || viewModel.isActive(.player))
+    }
+    
+    private var title: String {
+        viewModel.gameMode == .analysis ? "Analysis" : viewModel.gameType.rawValue
     }
     
     private var canUndo: Bool {
@@ -100,18 +112,6 @@ struct Game: View {
     private var canMakeNextMove: Bool {
         viewModel.canMakeNextMove
     }
-    
-    // MARK: - Drawing Constants
-    
-    private let blurRadius: CGFloat = 10
-    
-    private func panelWidth(for size: CGSize) -> CGFloat {
-        1 / 2 * min(size.width, size.height)
-    }
-    
-    private func panelHeight(for size: CGSize) -> CGFloat {
-        1 / 3 * min(size.width, size.height)
-    }
 }
 
 fileprivate struct GameButton: View {
@@ -121,20 +121,20 @@ fileprivate struct GameButton: View {
     
     init(_ label: String, action: @escaping () -> Void) {
         self.label = label
-        self.action = action
         self.systemName = nil
+        self.action = action
     }
     
     init(icon systemName: String, action: @escaping () -> Void) {
+        self.label = nil
         self.systemName = systemName
         self.action = action
-        self.label = nil
     }
     
     var body: some View {
         Button(action: action) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10).stroke(lineWidth: 1)
+                RoundedRectangle(cornerRadius: cornerRadius).stroke()
                 
                 if label != nil {
                     Text(label!)
@@ -145,6 +145,17 @@ fileprivate struct GameButton: View {
                 }
             }
         }
-        .frame(maxHeight: 50)
+        .frame(maxHeight: maxHeight)
     }
+    
+    // MARK: - Drawing Constants
+    
+    private let cornerRadius: CGFloat = 10
+    private let maxHeight: CGFloat = 50
+}
+
+struct VisualEffectView: UIViewRepresentable {
+    var effect: UIVisualEffect?
+    func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
+    func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }

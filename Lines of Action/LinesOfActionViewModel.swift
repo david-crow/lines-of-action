@@ -7,9 +7,19 @@
 //
 
 import SwiftUI
+import Combine
 
 class LinesOfActionViewModel: ObservableObject {
-    @Published private var model: LinesOfAction = LinesOfAction()
+    @ObservedObject private var model: LinesOfAction
+    
+    private var modelCancellable: AnyCancellable?
+    
+    init(gameType: LinesOfAction.GameType) {
+        model = LinesOfAction(gameType: gameType)
+        modelCancellable = model.objectWillChange.sink { [self] in
+            objectWillChange.send()
+        }
+    }
     
     // MARK: - View Functionality
     
@@ -22,15 +32,11 @@ class LinesOfActionViewModel: ObservableObject {
     @Published var showingLastMove: Bool = false {
         didSet {
             if showingLastMove {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
-                    self.showingLastMove = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
+                    showingLastMove = false
                 })
             }
         }
-    }
-    
-    var activeColor: Color {
-        model.activePlayer == .player ? theme.playerColor : theme.opponentColor
     }
     
     func name(for player: LinesOfAction.Player) -> String {
@@ -46,25 +52,21 @@ class LinesOfActionViewModel: ObservableObject {
     }
     
     var canMakePreviousMove: Bool {
-        model.moveCounter >= 0
+        model.canMakePreviousMove
     }
     
     var canMakeNextMove: Bool {
-        model.moveCounter < model.moves.count - 1
+        model.canMakeNextMove
     }
     
     // MARK: - Access to the Model
     
+    var gameType: LinesOfAction.GameType {
+        model.gameType
+    }
+    
     var gameMode: LinesOfAction.GameMode {
         model.gameMode
-    }
-    
-    var winner: LinesOfAction.Player? {
-        model.winner
-    }
-    
-    var piecesHaveBeenMoved: Bool {
-        model.moves.count > 0
     }
     
     var boardSize: Int {
@@ -79,8 +81,20 @@ class LinesOfActionViewModel: ObservableObject {
         model.pieces
     }
     
+    var winner: LinesOfAction.Player? {
+        model.winner
+    }
+    
+    var piecesHaveBeenMoved: Bool {
+        model.piecesHaveBeenMoved
+    }
+    
+    var inFinalState: Bool {
+        model.inFinalState
+    }
+    
     func isActive(_ player: LinesOfAction.Player) -> Bool {
-        player == model.activePlayer
+        model.isActive(player)
     }
     
     func isSelected(x: Int, y: Int) -> Bool {
@@ -90,10 +104,6 @@ class LinesOfActionViewModel: ObservableObject {
     func isLastMove(x: Int, y: Int) -> Bool {
         model.isLastMove(x, y)
     }
-        
-    func pieceAt(x: Int, y: Int) -> LinesOfAction.Piece? {
-        model.pieceAt(x, y)
-    }
     
     func canMoveTo(x: Int, y: Int) -> Bool {
         model.canMoveTo(x, y)
@@ -102,15 +112,24 @@ class LinesOfActionViewModel: ObservableObject {
     // MARK: - Intent(s)
     
     func resetGame() {
-        model = LinesOfAction()
+        modelCancellable?.cancel()
+        model = LinesOfAction(gameType: model.gameType)
+        modelCancellable = model.objectWillChange.sink { [self] in
+            objectWillChange.send()
+        }
+        objectWillChange.send()
+    }
+    
+    func concede() {
+        model.concede()
     }
     
     func analyze() {
         model.analyze()
     }
     
-    func concede() {
-        model.concede()
+    func selectSquare(x: Int, y: Int) {
+        model.selectSquare(x, y)
     }
     
     func undo() {
@@ -123,21 +142,5 @@ class LinesOfActionViewModel: ObservableObject {
     
     func nextMove() {
         model.nextMove()
-    }
-    
-    func selectSquare(x: Int, y: Int) {
-        if let tappedPiece = model.pieceAt(x, y) {
-            if model.selectedPieceIndex != nil && model.canMoveTo(x, y) {
-                model.moveTo(x, y)
-            } else if model.activePlayer == tappedPiece.player {
-                model.select(tappedPiece)
-            }
-        } else if model.selectedPieceIndex != nil {
-            if model.canMoveTo(x, y) {
-                model.moveTo(x, y)
-            } else {
-                model.deselectAllPieces()
-            }
-        }
     }
 }
