@@ -10,11 +10,17 @@ import SwiftUI
 import Combine
 
 class LinesOfActionViewModel: ObservableObject {
+    typealias GameType = LinesOfAction.GameType
+    typealias GameMode = LinesOfAction.GameMode
+    typealias Player = GameBoard.Player
+    typealias Piece = GameBoard.Piece
+    typealias Square = GameBoard.Square
+    
     @ObservedObject private var model: LinesOfAction
     
     private var modelCancellable: AnyCancellable?
     
-    init(gameType: LinesOfAction.GameType) {
+    init(gameType: GameType) {
         model = LinesOfAction(gameType: gameType)
         modelCancellable = model.objectWillChange.sink { [self] in
             objectWillChange.send()
@@ -29,21 +35,21 @@ class LinesOfActionViewModel: ObservableObject {
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true
     @Published var animateMoves: Bool = true
-    @Published var showingLastMove: Bool = false {
+    @Published var showingPreviousMove: Bool = false {
         didSet {
-            if showingLastMove {
+            if showingPreviousMove {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
-                    showingLastMove = false
+                    showingPreviousMove = false
                 })
             }
         }
     }
     
-    func name(for player: LinesOfAction.Player) -> String {
+    func name(for player: Player) -> String {
         player == .player ? playerName : opponentName
     }
     
-    func changeName(for player: LinesOfAction.Player, newName name: String) {
+    func changeName(for player: Player, newName name: String) {
         if player == .player {
             playerName = name
         } else {
@@ -51,21 +57,21 @@ class LinesOfActionViewModel: ObservableObject {
         }
     }
     
-    var canMakePreviousMove: Bool {
-        model.canMakePreviousMove
+    var canStepBackward: Bool {
+        model.canStepBackward
     }
     
-    var canMakeNextMove: Bool {
-        model.canMakeNextMove
+    var canStepForward: Bool {
+        model.canStepForward
     }
     
     // MARK: - Access to the Model
     
-    var gameType: LinesOfAction.GameType {
+    var gameType: GameType {
         model.gameType
     }
     
-    var gameMode: LinesOfAction.GameMode {
+    var gameMode: GameMode {
         model.gameMode
     }
     
@@ -73,15 +79,11 @@ class LinesOfActionViewModel: ObservableObject {
         model.boardSize
     }
     
-    var squares: [LinesOfAction.Square] {
-        model.squares
+    var pieces: [Piece] {
+        model.board.pieces
     }
     
-    var pieces: [LinesOfAction.Piece] {
-        model.pieces
-    }
-    
-    var winner: LinesOfAction.Player? {
+    var winner: Player? {
         model.winner
     }
     
@@ -93,20 +95,20 @@ class LinesOfActionViewModel: ObservableObject {
         model.inFinalState
     }
     
-    func isActive(_ player: LinesOfAction.Player) -> Bool {
+    func isActive(_ player: Player) -> Bool {
         model.isActive(player)
     }
     
     func isSelected(x: Int, y: Int) -> Bool {
-        model.isSelected(x, y)
+        model.isSelected(Square(x, y))
     }
     
-    func isLastMove(x: Int, y: Int) -> Bool {
-        model.isLastMove(x, y)
+    func isPreviousMove(x: Int, y: Int) -> Bool {
+        model.isPreviousMove(Square(x, y))
     }
     
     func canMoveTo(x: Int, y: Int) -> Bool {
-        model.canMoveTo(x, y)
+        model.canMoveTo(Square(x, y))
     }
     
     // MARK: - Intent(s)
@@ -129,18 +131,18 @@ class LinesOfActionViewModel: ObservableObject {
     }
     
     func selectSquare(x: Int, y: Int) {
-        model.selectSquare(x, y)
+        model.select(Square(x, y))
     }
     
     func undo() {
         model.undo()
     }
     
-    func previousMove() {
-        model.previousMove()
+    func stepBackward() {
+        model.stepBackward()
     }
     
-    func nextMove() {
-        model.nextMove()
+    func stepForward() {
+        model.stepForward()
     }
 }

@@ -79,16 +79,13 @@ struct PieceIcon: View {
             Circle()
                 .fill(color)
                 .frame(width: innerPieceSize, height: innerPieceSize)
-            Star(corners: numStarCorners, smoothness: starSmoothness)
+            Image(systemName: "atom").resizable()
                 .foregroundColor(.white)
                 .frame(width: emblemPieceSize, height: emblemPieceSize)
         }
     }
     
     // MARK: - Drawing Constants
-    
-    private let numStarCorners: Int = 8
-    private let starSmoothness: CGFloat = 0.4
     
     private var highlightSize: CGFloat {
         0.9 * maxDiameter
@@ -107,6 +104,6 @@ struct PieceIcon: View {
     }
     
     private var emblemPieceSize: CGFloat {
-        0.8 * innerPieceSize
+        0.7 * innerPieceSize
     }
 }

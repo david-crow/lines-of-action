@@ -25,7 +25,7 @@ struct Square: View {
         ZStack {
             Rectangle().fill(squareColor)
             SquareEmphasis(for: isSelected, color: selectedColor)
-            SquareEmphasis(for: isLastMove, color: highlightColor)
+            SquareEmphasis(for: isPreviousMove, color: highlightColor)
             SquareEmphasis(for: isDestination, color: highlightColor)
         }
         .overlay(Rectangle().stroke())
@@ -40,8 +40,8 @@ struct Square: View {
         canShowEmphasis && viewModel.isSelected(x: col, y: row)
     }
     
-    private var isLastMove: Bool {
-        canShowEmphasis && viewModel.showingLastMove && viewModel.isLastMove(x: col, y: row)
+    private var isPreviousMove: Bool {
+        canShowEmphasis && viewModel.showingPreviousMove && viewModel.isPreviousMove(x: col, y: row)
     }
     
     private var isDestination: Bool {

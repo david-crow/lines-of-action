@@ -40,16 +40,16 @@ struct Game: View {
                             HStack {
                                 GameButton("Undo") { viewModel.undo() }
                                     .disabled(!canUndo)
-                                GameButton("Show Last") { viewModel.showingLastMove = true }
+                                GameButton("Show Last") { viewModel.showingPreviousMove = true }
                                     .disabled(!canShowLast)
                                 GameButton("Concede") { didConcede = true }
                             }
                         } else {
                             HStack {
-                                GameButton(icon: "arrowtriangle.left") { viewModel.previousMove() }
-                                    .disabled(!canMakePreviousMove)
-                                GameButton(icon: "arrowtriangle.right") { viewModel.nextMove() }
-                                    .disabled(!canMakeNextMove)
+                                GameButton(icon: "arrowtriangle.left") { viewModel.stepBackward() }
+                                    .disabled(!viewModel.canStepBackward)
+                                GameButton(icon: "arrowtriangle.right") { viewModel.stepForward() }
+                                    .disabled(!viewModel.canStepForward)
                                 GameButton("Best Move") {}
                             }
                             .disabled(viewModel.gameMode != .analysis)
@@ -102,15 +102,7 @@ struct Game: View {
     }
     
     private var canShowLast: Bool {
-        !viewModel.showingLastMove && viewModel.piecesHaveBeenMoved
-    }
-    
-    private var canMakePreviousMove: Bool {
-        viewModel.canMakePreviousMove
-    }
-    
-    private var canMakeNextMove: Bool {
-        viewModel.canMakeNextMove
+        !viewModel.showingPreviousMove && viewModel.piecesHaveBeenMoved
     }
 }
 
