@@ -19,12 +19,12 @@ struct GameSettings: View {
             NavigationView {
                 Form {
                     Section(header: Text("Names")) {
-                        TextField("Player 1", text: $viewModel.playerName) {
+                        TextField("Player 1", text: $viewModel.playerName, onCommit: {
                             UIApplication.shared.endEditing()
-                        }
-                        TextField("Player 2", text: $viewModel.opponentName) {
+                        })
+                        TextField("Player 2", text: $viewModel.opponentName, onCommit: {
                             UIApplication.shared.endEditing()
-                        }
+                        })
                     }
                     
                     Section(header: Text("Options")) {

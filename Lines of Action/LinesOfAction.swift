@@ -18,8 +18,7 @@ class LinesOfAction: ObservableObject {
     // MARK: - Variables
     
     let gameType: GameType
-    let boardSize: Int
-    private let agent: Agent?
+    private var agent: Agent?
     
     @Published private(set) var gameMode: GameMode = .playing
     @Published private(set) var board: GameBoard
@@ -54,12 +53,15 @@ class LinesOfAction: ObservableObject {
     
     init(gameType: GameType, boardSize: Int = 8) {
         self.gameType = gameType
-        self.boardSize = boardSize
         self.board = GameBoard.createBoard(size: boardSize)
         self.agent = gameType == .offline ? nil : Agent()
     }
     
     // MARK: - Public Accessors
+    
+    var boardSize: Int {
+        board.size
+    }
     
     var piecesHaveBeenMoved: Bool {
         moves.count > 0
@@ -77,7 +79,7 @@ class LinesOfAction: ObservableObject {
         moveCounter < moves.count - 1
     }
     
-    func isActive(_ player: LinesOfAction.Player) -> Bool {
+    func isActive(_ player: Player) -> Bool {
         player == board.activePlayer
     }
     
@@ -120,9 +122,12 @@ class LinesOfAction: ObservableObject {
     }
     
     func undo() {
-        if let previousMove = moves.popLast() {
-            board.undo(move: previousMove)
-            moveCounter -= 1
+        let undoCount = (gameType == .solo && winner == nil) ? 2 : 1
+        for _ in 0..<undoCount {
+            if let previousMove = moves.popLast() {
+                board.undo(move: previousMove)
+                moveCounter -= 1
+            }
         }
     }
     
@@ -156,14 +161,16 @@ class LinesOfAction: ObservableObject {
     private func move(to newLocation: Square) {
         moveHelper(newLocation: newLocation)
         
-        if gameType == .solo && winner == nil {
-            if let move = agent!.move(board: board) {
-                selectedPieceIndex = board.pieces.firstIndex(matching: move.piece)
-                moveHelper(newLocation: move.destination)
-            } else {
-                winner = board.inactivePlayer
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: { [self] in
+            if gameType == .solo && winner == nil {
+                if let move = agent!.move(board: board) {
+                    selectedPieceIndex = board.pieces.firstIndex(matching: move.piece)
+                    moveHelper(newLocation: move.destination)
+                } else {
+                    winner = board.inactivePlayer
+                }
             }
-        }
+        })
     }
     
     private func moveHelper(newLocation: Square) {
@@ -200,6 +207,8 @@ struct GameBoard {
     
     // MARK: - Variables
     
+    let size: Int
+    
     fileprivate(set) var pieces: [Piece]
     fileprivate var squares: [Square]
     fileprivate var activePlayer: Player = .player
@@ -232,7 +241,7 @@ struct GameBoard {
             }
         }
         
-        return GameBoard(pieces: pieces, squares: squares)
+        return GameBoard(size: size, pieces: pieces, squares: squares)
     }
     
     // MARK: - Accessors
@@ -250,7 +259,7 @@ struct GameBoard {
         return nil
     }
     
-    private func didWin(_ player: Player) -> Bool {
+    fileprivate func didWin(_ player: Player) -> Bool {
         let pieces = self.pieces(for: player)
         return pieces.count < 2 || allConnected(pieces)
     }
@@ -289,6 +298,18 @@ struct GameBoard {
         return nil
     }
     
+    fileprivate func isEdge(_ location: Square) -> Bool {
+        location.x == 0 || location.x == size - 1 || location.y == 0 || location.y == size - 1
+    }
+    
+    fileprivate func generateMoves() -> [Agent.Move] {
+        var moves: [Agent.Move] = []
+        for piece in pieces(for: activePlayer) {
+            moves += findDestinations(for: piece).map { Agent.Move(piece, to: $0) }
+        }
+        return moves
+    }
+    
     fileprivate func findDestinations(for piece: Piece) -> [Square] {
         squares.filter { canMove(piece, to: $0) }
     }
@@ -299,7 +320,7 @@ struct GameBoard {
         activePlayer = opponent(of: activePlayer)
     }
     
-    fileprivate mutating func move(_ piece: Piece, to newLocation: Square) -> Move {
+    @discardableResult fileprivate mutating func move(_ piece: Piece, to newLocation: Square) -> Move {
         let oldLocation = piece.location
         var move = Move(oldLocation: oldLocation, newLocation: newLocation)
         
@@ -467,33 +488,211 @@ struct GameBoard {
 fileprivate struct Agent {
     fileprivate typealias Piece = GameBoard.Piece
     fileprivate typealias Square = GameBoard.Square
+    fileprivate typealias Player = LinesOfAction.Player
     
-    fileprivate func move(board: GameBoard) -> Move? {
-        var moves: [Move] = []
-        
-        for piece in board.pieces(for: board.activePlayer) {
-            let destinations = board.findDestinations(for: piece)
-            moves += destinations.map { Move(piece, to: $0) }.map { Move(other: $0, value: value(of: $0)) }
+    private var bestMove: Move?
+    private var moveValues: [Int : [Int : Double]]
+    
+    init() {
+        moveValues = Agent.computeMoveValues()
+    }
+    
+    fileprivate mutating func move(board: GameBoard) -> Move? {
+        bestMove = nil
+        minimax(board, isRoot: true)
+        return bestMove
+    }
+    
+    @discardableResult private mutating func minimax(_ board: GameBoard, depth: Int = Agent.maxDepth,
+                                                     alpha: Double = -.infinity, beta: Double = .infinity,
+                                                     isMax: Bool = true, isRoot: Bool = false) -> Double
+    {
+        let winner = board.determineWinner()
+        if winner != nil || depth == 0 {
+            return value(of: board, for: board.inactivePlayer, winner: winner)
         }
         
-        return moves.sorted { $0.value > $1.value }.first
+        var value: Double
+        
+        if isMax {
+            value = -.infinity
+            var alpha = alpha
+            
+            for move in board.generateMoves() {
+                var nextBoard = board
+                nextBoard.move(move.piece, to: move.destination)
+                value = max(value, minimax(nextBoard, depth: depth - 1, alpha: alpha, beta: beta, isMax: false))
+                alpha = max(alpha, value)
+                
+                if isRoot && (bestMove == nil || value > bestMove!.value) {
+                    bestMove = Move(other: move, value: value)
+                }
+                
+                if alpha >= beta {
+                    break
+                }
+            }
+        } else {
+            value = .infinity
+            var beta = beta
+            
+            for move in board.generateMoves() {
+                var nextBoard = board
+                nextBoard.move(move.piece, to: move.destination)
+                value = min(value, minimax(nextBoard, depth: depth - 1, alpha: alpha, beta: beta, isMax: true))
+                beta = min(beta, value)
+                
+                if beta <= alpha {
+                    break
+                }
+            }
+        }
+        
+        return value
     }
     
-    private func value(of move: Move) -> Int {
-        Int.random(in: 0...100)
+    // MARK: - State Evaluation
+    
+    private func value(of board: GameBoard, for player: Player, winner: Player?) -> Double {
+        if winner != nil {
+            return winner == player ? .infinity : -.infinity
+        }
+        
+        let pieces = board.pieces(for: player)
+        
+        // concentration
+        let centerX = pieces.map { $0.location.x }.reduce(0, +) / pieces.count
+        let centerY = pieces.map { $0.location.y }.reduce(0, +) / pieces.count
+        let sumOfDistances = pieces.map { min(abs($0.location.x - centerX), abs($0.location.y - centerY)) }.reduce(0, +)
+        let surplusOfDistances = sumOfDistances - Agent.minSumOfDistances[pieces.count]!
+        let concentration = 1 / Double(max(1, surplusOfDistances))
+        
+        // mobility
+        let mobility = computeSumOfMoveValues(for: board) / (16 * Double(pieces.count))
+        
+        // centralization
+        let intLocations = pieces.map { $0.location.x + $0.location.y * board.size }
+        let centralization = normalizeCentralization(intLocations.map { Agent.squareValues[$0] }.reduce(0, +),
+                                                     pieceCount: pieces.count)
+        
+        // uniformity
+        let xLocations = pieces.map { $0.location.x }.sorted()
+        let yLocations = pieces.map { $0.location.y }.sorted()
+        let uniformity = 64.0 / Double((xLocations.last! - xLocations.first!) * (yLocations.last! - yLocations.first!))
+        
+        // connectedness
+        var connections: Double = 0
+        for p1 in pieces {
+            for p2 in pieces {
+                if abs(p1.location.x - p2.location.x) <= 1 && abs(p1.location.y - p2.location.y) <= 1 {
+                    connections += 1
+                }
+            }
+        }
+        let connectedness = connections / Double(pieces.count)
+        
+        // to move
+        let isMoving: Double = player == board.activePlayer ? 1 : 0
+        
+        // heuristic evaluation
+        let playerHeuristic =
+            40 * concentration +
+            30 * mobility +
+            15 * centralization +
+            9 * uniformity +
+            5 * connectedness +
+            1 * isMoving
+        let opponentHeuristic = player == board.activePlayer
+            ? 0 : value(of: board, for: board.activePlayer, winner: winner)
+        return playerHeuristic - opponentHeuristic
     }
+    
+    private func normalizeCentralization(_ value: Double, pieceCount: Int) -> Double {
+        let minSquareValues = Double(pieceCount) * Agent.squareValues.min()!
+        let maxSquareValues = Double(pieceCount) * Agent.squareValues.max()!
+        return (value - minSquareValues) / (maxSquareValues - minSquareValues)
+    }
+    
+    private func computeSumOfMoveValues(for board: GameBoard) -> Double {
+        var sumOfMoveValues: Double = 0
+        
+        for move in board.generateMoves() {
+            let fromIndex = move.piece.location.x + 8 * move.piece.location.y
+            let toIndex = move.destination.x + 8 * move.destination.y
+            sumOfMoveValues += moveValues[fromIndex]![toIndex]! * (board.pieceAt(move.destination) != nil ? 2 : 1)
+        }
+        
+        return sumOfMoveValues
+    }
+    
+    // MARK: - Type Properties/Methods
+    
+    private static let maxDepth: Int = 1
+    
+    private static let minSumOfDistances: [Int : Int] = [
+        1: 0,
+        2: 1,
+        3: 2,
+        4: 3,
+        5: 4,
+        6: 5,
+        7: 6,
+        8: 7,
+        9: 8,
+        10: 10,
+        11: 12,
+        12: 14
+    ]
+    
+    private static let squareValues: [Double] = [
+        -80, -25, -20, -20, -20, -20, -25, -80,
+        -25,  10,  10,  10,  10,  10,  10, -25,
+        -20,  10,  25,  25,  25,  25,  10, -20,
+        -20,  10,  25,  50,  50,  25,  10, -20,
+        -20,  10,  25,  50,  50,  25,  10, -20,
+        -20,  10,  25,  25,  25,  25,  10, -20,
+        -25,  10,  10,  10,  10,  10,  10, -25,
+        -80, -25, -20, -20, -20, -20, -25, -80
+    ]
+    
+    private static func computeMoveValues() -> [Int : [Int : Double]] {
+        var edges = [Int]()
+        for i in 0..<8 {
+            edges += [i, 56 + i, i * 8, i * 8 + 7]
+        }
+        edges = Array(Set(edges))
+        
+        var moveValues = [Int : [Int : Double]]()
+        for i in 0..<64 {
+            var cellValues = [Int : Double]()
+
+            for j in 0..<64 {
+                if edges.contains(j) {
+                    cellValues[j] = edges.contains(i) ? 0.25 : 0.5
+                } else {
+                    cellValues[j] = 1
+                }
+            }
+            
+            moveValues[i] = cellValues
+        }
+        
+        return moveValues
+    }
+    
+    // MARK: - Objects
     
     fileprivate struct Move {
         let piece: Piece
         let destination: Square
-        var value: Int = 0
+        var value: Double = 0
         
         init(_ piece: Piece, to destination: Square) {
             self.piece = piece
             self.destination = destination
         }
         
-        init(other: Move, value: Int) {
+        init(other: Move, value: Double) {
             self.piece = other.piece
             self.destination = other.destination
             self.value = value
