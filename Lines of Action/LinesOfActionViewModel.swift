@@ -31,6 +31,7 @@ class LinesOfActionViewModel: ObservableObject {
     
     @Published var playerName: String = "Player 1"
     @Published var opponentName: String = "Player 2"
+    @Published var icon: String = Theme.icons[0]
     @Published var theme: Theme = Theme.themes[0]
     @Published var showValidMoves: Bool = true
     @Published var allowUndo: Bool = true

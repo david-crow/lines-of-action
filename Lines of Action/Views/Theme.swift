@@ -14,8 +14,13 @@ struct Theme: Identifiable, Hashable {
     let opponentColor: Color
     let firstSquareColor: Color
     let secondSquareColor: Color
-    let highlightColor: Color = .yellow
+    let highlightColor: Color = Color(#colorLiteral(red: 1, green: 0.8431372549, blue: 0, alpha: 1))
     let id: UUID = UUID()
+    
+    static let icons = [
+        "atom", "plus", "ladybug.fill", "sparkle", "moon.fill",
+        "star.fill", "cross.fill", "diamond.fill", "circle.fill"
+    ]
     
     static let themes = [
         Theme(
@@ -57,6 +62,31 @@ struct Theme: Identifiable, Hashable {
     ]
 }
 
+struct IconView: View {
+    @EnvironmentObject var viewModel: LinesOfActionViewModel
+    
+    let icon: String
+    let size: CGSize
+        
+    init(for icon: String, size: CGSize) {
+        self.icon = icon
+        self.size = size
+    }
+    
+    var body: some View {
+        VStack {
+            PieceIcon(icon: icon, color: viewModel.theme.playerColor, maxDiameter: pieceSize).padding(.bottom, 5)
+            Image(systemName: "checkmark").opacity(icon == viewModel.icon ? 1 : 0)
+        }
+        .padding()
+        .onTapGesture { viewModel.icon = icon }
+    }
+    
+    private var pieceSize: CGFloat {
+        0.15 * min(size.width, size.height)
+    }
+}
+
 struct ThemeView: View {
     @EnvironmentObject var viewModel: LinesOfActionViewModel
     
@@ -70,7 +100,7 @@ struct ThemeView: View {
     
     var body: some View {
         VStack {
-            ThemeBoard(for: theme, size: size)
+            ThemeBoard(for: theme, icon: viewModel.icon, size: size)
             Text(theme.name).padding(.bottom, 5)
             Image(systemName: "checkmark").opacity(theme == viewModel.theme ? 1 : 0)
         }
@@ -80,10 +110,12 @@ struct ThemeView: View {
     
     private struct ThemeBoard: View {
         let theme: Theme
+        let icon: String
         let size: CGSize
         
-        init(for theme: Theme, size: CGSize) {
+        init(for theme: Theme, icon: String, size: CGSize) {
             self.theme = theme
+            self.icon = icon
             self.size = size
         }
         
@@ -122,7 +154,7 @@ struct ThemeView: View {
         
         private func piece(x: Int, y: Int, maxDiameter: CGFloat) -> PieceIcon? {
             if x == y {
-                return PieceIcon(color: x == 0 ? theme.playerColor : theme.opponentColor, maxDiameter: squareSize)
+                return PieceIcon(icon: icon, color: x == 0 ? theme.playerColor : theme.opponentColor, maxDiameter: squareSize)
             }
             return nil
         }

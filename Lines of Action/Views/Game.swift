@@ -32,6 +32,7 @@ struct Game: View {
                     Board()
                         .environmentObject(viewModel)
                         .allowsHitTesting(canTapBoard)
+                        .padding()
                         .frame(maxWidth: UIScreen.main.bounds.width,
                                maxHeight: UIScreen.main.bounds.width)
                     

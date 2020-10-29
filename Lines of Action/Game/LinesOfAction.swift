@@ -25,9 +25,9 @@ class LinesOfAction: ObservableObject {
     @Published private(set) var winner: Player? {
         didSet {
             if winner != nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: { [self] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
                     gameMode = .gameOver
-                })
+                }
             }
         }
     }
@@ -54,7 +54,7 @@ class LinesOfAction: ObservableObject {
     init(gameType: GameType, boardSize: Int = 8) {
         self.gameType = gameType
         self.board = GameBoard(size: boardSize)
-        self.agent = gameType == .offline ? nil : Agent()
+        self.agent = gameType == .offline ? nil : Agent(boardSize: boardSize)
     }
     
     // MARK: - Public Accessors
@@ -122,6 +122,7 @@ class LinesOfAction: ObservableObject {
     }
     
     func undo() {
+        selectedPieceIndex = nil
         let undoCount = (gameType == .solo && winner == nil) ? 2 : 1
         for _ in 0..<undoCount {
             if let previousMove = moves.popLast() {
@@ -161,7 +162,7 @@ class LinesOfAction: ObservableObject {
     private func move(to newLocation: Square) {
         moveHelper(newLocation: newLocation)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: { [self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [self] in
             if gameType == .solo && winner == nil {
                 if let move = agent!.move(board: board) {
                     selectedPieceIndex = board.pieces.firstIndex(matching: move.piece)
@@ -170,7 +171,7 @@ class LinesOfAction: ObservableObject {
                     winner = board.inactivePlayer
                 }
             }
-        })
+        }
     }
     
     private func moveHelper(newLocation: Square) {

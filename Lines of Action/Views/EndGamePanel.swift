@@ -15,7 +15,7 @@ struct EndGamePanel: View {
     
     var body: some View {
         VStack {
-            PieceIcon(color: pieceColor, maxDiameter: pieceDiameter)
+            PieceIcon(icon: viewModel.icon, color: pieceColor, maxDiameter: pieceDiameter)
             Text("Winner!").font(winnerFont).foregroundColor(.black)
             Text("\(winnerName)").font(nameFont).foregroundColor(.black)
         }

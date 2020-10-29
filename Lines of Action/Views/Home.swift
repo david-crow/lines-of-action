@@ -14,11 +14,11 @@ struct Home: View {
         NavigationView {
             VStack {
                 ZStack {
-                    PieceIcon(color: firstLogoColor, maxDiameter: logoDiameter)
+                    PieceIcon(icon: Theme.icons[0], color: firstLogoColor, maxDiameter: logoDiameter)
                         .rotationEffect(firstPieceRotation)
                         .offset(CGSize(width: -logoOffset, height: -logoOffset))
                     
-                    PieceIcon(color: secondLogoColor, maxDiameter: logoDiameter)
+                    PieceIcon(icon: Theme.icons[0], color: secondLogoColor, maxDiameter: logoDiameter)
                         .rotationEffect(secondPieceRotation)
                         .offset(CGSize(width: logoOffset, height: 0))
                 }
@@ -39,7 +39,7 @@ struct Home: View {
                     NavigationButton(label: "Online Multiplayer")
                 }
                 
-                NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
+                NavigationLink(destination: HowToPlay()) {
                     NavigationButton(label: "How to Play")
                 }
                 

@@ -76,10 +76,10 @@ struct GameBoard {
     }
     
     func determineWinner() -> Player? {
-        if didWin(.player) {
-            return .player
-        } else if didWin(.opponent) {
-            return .opponent
+        if didWin(inactivePlayer) {
+            return inactivePlayer
+        } else if didWin(activePlayer) {
+            return activePlayer
         }
         return nil
     }
@@ -160,7 +160,7 @@ struct GameBoard {
         let index = pieces.firstIndex(matching: piece)!
         pieces[index].location = newLocation
         squares[piece.location.x][piece.location.y] = .none
-        squares[newLocation.x][newLocation.y] = .player
+        squares[newLocation.x][newLocation.y] = piece.player
         subtractLines(for: move.oldLocation)
         switchPlayers()
         
@@ -171,12 +171,12 @@ struct GameBoard {
         let piece = pieceAt(move.newLocation)!
         let index = pieces.firstIndex(matching: piece)!
         pieces[index].location = move.oldLocation
-        squares[move.oldLocation.x][move.oldLocation.y] = .player
+        squares[move.oldLocation.x][move.oldLocation.y] = piece.player
         addLines(for: move.oldLocation)
         
         if move.capturedPiece {
             pieces.append(Piece(player: opponent(of: piece.player), location: move.newLocation))
-            squares[move.newLocation.x][move.newLocation.y] = .opponent
+            squares[move.newLocation.x][move.newLocation.y] = opponent(of: piece.player)
         } else {
             subtractLines(for: move.newLocation)
             squares[move.newLocation.x][move.newLocation.y] = .none
@@ -197,7 +197,7 @@ struct GameBoard {
         let index = pieces.firstIndex(matching: pieceAt(move.oldLocation)!)!
         pieces[index].location = move.newLocation
         squares[move.oldLocation.x][move.oldLocation.y] = .none
-        squares[move.newLocation.x][move.newLocation.y] = .player
+        squares[move.newLocation.x][move.newLocation.y] = move.piece.player
         subtractLines(for: move.oldLocation)
         switchPlayers()
     }

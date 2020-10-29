@@ -20,7 +20,7 @@ struct Piece: View {
     }
     
     var body: some View {
-        PieceIcon(colors: (color, highlightColor), maxDiameter: squareSize).position(pieceLocation)
+        PieceIcon(icon: viewModel.icon, colors: (color, highlightColor), maxDiameter: squareSize).position(pieceLocation)
     }
     
     // MARK: - Drawing Constants
@@ -46,17 +46,20 @@ struct Piece: View {
 }
 
 struct PieceIcon: View {
+    let icon: String
     let color: Color
     let highlightColor: Color?
     let maxDiameter: CGFloat
     
-    init(color: Color, maxDiameter: CGFloat) {
+    init(icon: String, color: Color, maxDiameter: CGFloat) {
+        self.icon = icon
         self.color = color
         self.highlightColor = nil
         self.maxDiameter = maxDiameter
     }
     
-    init(colors: (color: Color, highlightColor: Color?), maxDiameter: CGFloat) {
+    init(icon: String, colors: (color: Color, highlightColor: Color?), maxDiameter: CGFloat) {
+        self.icon = icon
         self.color = colors.color
         self.highlightColor = colors.highlightColor
         self.maxDiameter = maxDiameter
@@ -79,7 +82,8 @@ struct PieceIcon: View {
             Circle()
                 .fill(color)
                 .frame(width: innerPieceSize, height: innerPieceSize)
-            Image(systemName: "atom").resizable()
+            Image(systemName: icon)
+                .resizable()
                 .foregroundColor(.white)
                 .frame(width: emblemPieceSize, height: emblemPieceSize)
         }

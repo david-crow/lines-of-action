@@ -36,6 +36,15 @@ struct GameSettings: View {
                     Section(header: Text("Theme")) {
                         ScrollView(.horizontal) {
                             ScrollViewReader { scrollView in
+                                icons(for: geometry.size)
+                                .onAppear {
+                                    scrollView.scrollTo(viewModel.icon)
+                                }
+                            }
+                        }
+                        
+                        ScrollView(.horizontal) {
+                            ScrollViewReader { scrollView in
                                 themes(for: geometry.size)
                                 .onAppear {
                                     scrollView.scrollTo(viewModel.theme)
@@ -53,6 +62,14 @@ struct GameSettings: View {
     private var done: some View {
         Button("Done") {
             presentation.wrappedValue.dismiss()
+        }
+    }
+    
+    private func icons(for size: CGSize) -> some View {
+        HStack {
+            ForEach(Theme.icons, id: \.self) { icon in
+                IconView(for: icon, size: size).environmentObject(viewModel)
+            }
         }
     }
     
