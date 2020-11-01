@@ -20,6 +20,8 @@ struct GameBoard {
     private var horizontalCount: [Int]
     private var posDiagonalCount: [Int]
     private var negDiagonalCount: [Int]
+    private(set) var quadValues: [[[Int]]]
+    private(set) var quadCounts: [[Int]]
     
     private(set) var activePlayer: Player = .player
     var inactivePlayer: Player {
@@ -37,6 +39,8 @@ struct GameBoard {
         self.horizontalCount = Array(repeating: 0, count: size)
         self.posDiagonalCount = Array(repeating: 0, count: size + lastIndex)
         self.negDiagonalCount = Array(repeating: 0, count: size + lastIndex)
+        self.quadValues = [[[Int]]](repeating: [[Int]](repeating: [Int](repeating: 0, count: size + 1), count: size + 1), count: 2)
+        self.quadCounts = [[Int]](repeating: [Int](repeating: 0, count: 6), count: 2)
         
         for i in 1..<lastIndex {
             self.squares[i][0] = .player
@@ -67,6 +71,8 @@ struct GameBoard {
         posDiagonalCount[0] = 0
         posDiagonalCount[lastIndex] = 0
         posDiagonalCount[lastIndex * 2] = 0
+        
+        countQuads()
     }
     
     // MARK: - Accessors
@@ -148,57 +154,123 @@ struct GameBoard {
     // MARK: - Mutators
     
     @discardableResult mutating func move(_ piece: Piece, to newLocation: Square) -> Move {
+        let player = piece.player
         var move = Move(piece, to: newLocation)
         
-        if let capturedPiece = pieceAt(newLocation), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
-            move.capturedPiece = true
-            pieces.remove(at: capturedIndex)
-        } else {
-            addLines(for: move.newLocation)
-        }
+        // update the quad counts pre-move
+        decrementQuadCounts(for: player, at: move.oldLocation)
+        decrementQuadCounts(for: player, at: move.newLocation)
         
-        let index = pieces.firstIndex(matching: piece)!
-        pieces[index].location = newLocation
+        // maintain accurate quad counts in the event that the piece only moves one square orthogonally
+        // and save the occupied locations in the quad
+        let quadLocations = computeQuadLocations(for: player, making: move)
+        
+        // update the occupied squares and the lines of action
         squares[piece.location.x][piece.location.y] = .none
         squares[newLocation.x][newLocation.y] = piece.player
         subtractLines(for: move.oldLocation)
+        
+        // update the quads for the moving piece
+        removeQuad(for: player, at: move.oldLocation)
+        addQuad(for: player, at: move.newLocation)
+        
+        // if the move captures a piece...
+        if let capturedPiece = pieceAt(move.newLocation), let capturedIndex = pieces.firstIndex(of: capturedPiece) {
+            move.capturedPiece = true
+            pieces.remove(at: capturedIndex)
+            
+            // update the quads and quad counts for the captured piece
+            decrementQuadCounts(for: opponent(of: player), at: move.newLocation)
+            removeQuad(for: opponent(of: player), at: move.newLocation)
+            incrementQuadCounts(for: opponent(of: player), at: move.newLocation)
+        } else {
+            addLines(for: move.newLocation)
+        }
+
+        // update the quad counts post-move
+        incrementQuadCounts(for: player, at: move.oldLocation)
+        incrementQuadCounts(for: player, at: move.newLocation)
+
+        for location in quadLocations {
+            quadCounts[player.rawValue][quadValues[player.rawValue][location.x][location.y]] -= 1
+        }
+        
+        // find and move the piece
+        let index = pieces.firstIndex(matching: piece)!
+        pieces[index].location = newLocation
         switchPlayers()
         
         return move
     }
     
     mutating func undo(_ move: Move) {
+        let player = move.piece.player
+        
+        // find and move the piece
         let piece = pieceAt(move.newLocation)!
         let index = pieces.firstIndex(matching: piece)!
         pieces[index].location = move.oldLocation
-        squares[move.oldLocation.x][move.oldLocation.y] = piece.player
+        
+        // update the occupied squares and the lines of action
+        squares[move.oldLocation.x][move.oldLocation.y] = player
+        squares[move.newLocation.x][move.newLocation.y] = move.capturedPiece ? opponent(of: player) : .none
         addLines(for: move.oldLocation)
         
+        // maintain accurate quad counts in the event that the piece only moves one square orthogonally
+        // and save the occupied locations in the quad
+        let quadLocations = computeQuadLocations(for: player, making: move)
+        
+        // update the quad counts pre-move
+        decrementQuadCounts(for: player, at: move.oldLocation)
+        decrementQuadCounts(for: player, at: move.newLocation)
+        
+        // update the quads for the moving piece
+        removeQuad(for: player, at: move.newLocation)
+        addQuad(for: player, at: move.oldLocation)
+        
+        // if the move captured a piece...
         if move.capturedPiece {
             pieces.append(Piece(player: opponent(of: piece.player), location: move.newLocation))
-            squares[move.newLocation.x][move.newLocation.y] = opponent(of: piece.player)
+            
+            // update the quads and quad counts for the captured piece
+            decrementQuadCounts(for: opponent(of: player), at: move.newLocation)
+            addQuad(for: opponent(of: player), at: move.newLocation)
+            incrementQuadCounts(for: opponent(of: player), at: move.newLocation)
         } else {
             subtractLines(for: move.newLocation)
             squares[move.newLocation.x][move.newLocation.y] = .none
         }
         
+        // update the quad counts post-move
+        incrementQuadCounts(for: player, at: move.newLocation)
+        incrementQuadCounts(for: player, at: move.oldLocation)
+        
+        for location in quadLocations {
+            quadCounts[player.rawValue][quadValues[player.rawValue][location.x][location.y]] -= 1
+        }
+        
         switchPlayers()
     }
     
-    mutating func redo(_ move: Move) {
+    mutating func stepBackward(to move: Move) {
+        let index = pieces.firstIndex(matching: pieceAt(move.newLocation)!)!
+        pieces[index].location = move.oldLocation
+        switchPlayers()
+        
+        if move.capturedPiece {
+            pieces.append(Piece(player: opponent(of: move.piece.player), location: move.newLocation))
+        }
+    }
+    
+    mutating func stepForward(to move: Move) {
         if move.capturedPiece {
             let capturedPiece = pieceAt(move.newLocation)!
             let capturedIndex = pieces.firstIndex(matching: capturedPiece)!
             pieces.remove(at: capturedIndex)
-        } else {
-            addLines(for: move.newLocation)
         }
         
         let index = pieces.firstIndex(matching: pieceAt(move.oldLocation)!)!
         pieces[index].location = move.newLocation
-        squares[move.oldLocation.x][move.oldLocation.y] = .none
-        squares[move.newLocation.x][move.newLocation.y] = move.piece.player
-        subtractLines(for: move.oldLocation)
         switchPlayers()
     }
     
@@ -206,11 +278,15 @@ struct GameBoard {
     
     private func didWin(_ player: Player) -> Bool {
         let pieces = self.pieces(for: player)
-        return pieces.count < 2 || allConnected(pieces)
+        return pieces.count < 2 || allConnected(pieces, for: player)
     }
     
-    private func allConnected(_ pieces: [Piece]) -> Bool {
-        // TODO: - implement quads, check Euler > 1
+    private func allConnected(_ pieces: [Piece], for player: Player) -> Bool {
+        let side = player.rawValue
+        let euler = Double(quadCounts[side][1] - quadCounts[side][3] - 2 * quadCounts[side][5]) / 4
+        if euler > 1 {
+            return false
+        }
         
         var connectedPieces = [pieces.first!]
         var remainingPieces = pieces[1...]
@@ -247,6 +323,18 @@ struct GameBoard {
         activePlayer = opponent(of: activePlayer)
     }
     
+    private func owned(by player: Player, at location: Square) -> Bool {
+        if location.x < 0 || location.y < 0 || location.x >= size || location.y >= size {
+            return false
+        }
+        
+        return player == playerAt(location)
+    }
+    
+    private func playerAt(_ location: Square) -> Player {
+        squares[location.x][location.y]
+    }
+    
     private mutating func addLines(for location: Square) {
         updateLines(for: location, adding: 1)
     }
@@ -262,10 +350,133 @@ struct GameBoard {
         negDiagonalCount[location.x - location.y + lastIndex] += value
     }
     
+    private mutating func countQuads() {
+        quadCounts = [[Int]](repeating: [Int](repeating: 0, count: 6), count: 2)
+        
+        for i in 0 ..< size + 1 {
+            for j in 0 ..< size + 1 {
+                quadValues[Player.player.rawValue][i][j] = quadValue(for: .player, at: Square(i, j))
+                quadValues[Player.opponent.rawValue][i][j] = quadValue(for: .opponent, at: Square(i, j))
+                quadCounts[Player.player.rawValue][quadValues[Player.player.rawValue][i][j]] += 1
+                quadCounts[Player.opponent.rawValue][quadValues[Player.opponent.rawValue][i][j]] += 1
+            }
+        }
+    }
+    
+    private func quadValue(for player: Player, at location: Square) -> Int {
+        let x = location.x
+        let y = location.y
+        
+        let possibleLocations = [Square(x - 1, y - 1), Square(x, y - 1), Square(x - 1, y), Square(x, y)]
+        let actualLocations = possibleLocations.map { owned(by: player, at: $0) }
+        let count = actualLocations.map { $0.intValue }.reduce(0, +)
+        
+        // diagonal
+        if count == 2 && ((actualLocations[0] && actualLocations[3]) || (actualLocations[1] && actualLocations[2]))
+        {
+            return 5
+        }
+        
+        return count
+    }
+    
+    private mutating func addQuad(for player: Player, at location: Square) {
+        let side = player.rawValue
+        let x = location.x
+        let y = location.y
+        
+        quadValues[side][x + 1][y + 1] = incrementedQuadValue(for: player, at: Square(x, y), currentValue: quadValues[side][x + 1][y + 1])
+        quadValues[side][x + 1][y] = incrementedQuadValue(for: player, at: Square(x, y - 1), currentValue: quadValues[side][x + 1][y])
+        quadValues[side][x][y + 1] = incrementedQuadValue(for: player, at: Square(x - 1, y), currentValue: quadValues[side][x][y + 1])
+        quadValues[side][x][y] = incrementedQuadValue(for: player, at: Square(x - 1, y - 1), currentValue: quadValues[side][x][y])
+    }
+    
+    private mutating func removeQuad(for player: Player, at location: Square) {
+        let side = player.rawValue
+        let x = location.x
+        let y = location.y
+        
+        quadValues[side][x + 1][y + 1] = decrementedQuadValue(for: player, at: Square(x, y), currentValue: quadValues[side][x + 1][y + 1])
+        quadValues[side][x + 1][y] = decrementedQuadValue(for: player, at: Square(x, y - 1), currentValue: quadValues[side][x + 1][y])
+        quadValues[side][x][y + 1] = decrementedQuadValue(for: player, at: Square(x - 1, y), currentValue: quadValues[side][x][y + 1])
+        quadValues[side][x][y] = decrementedQuadValue(for: player, at: Square(x - 1, y - 1), currentValue: quadValues[side][x][y])
+    }
+    
+    private func incrementedQuadValue(for player: Player, at location: Square, currentValue: Int) -> Int {
+        let newValue = currentValue + 1
+        let x = location.x
+        let y = location.y
+        
+        if newValue == 6 {
+            return 3
+        }
+        
+        if newValue == 2 && x >= 0 && y >= 0 && x < lastIndex && y < lastIndex
+            && ((squares[x][y] == player && squares[x + 1][y + 1] == player)
+                    || (squares[x + 1][y] == player && squares[x][y + 1] == player))
+        {
+            return 5
+        }
+        
+        return newValue
+    }
+    
+    private func decrementedQuadValue(for player: Player, at location: Square, currentValue: Int) -> Int {
+        let newValue = currentValue - 1
+        let x = location.x
+        let y = location.y
+        
+        if newValue == 4 {
+            return 1
+        }
+        
+        if newValue == 2 && x >= 0 && y >= 0 && x < lastIndex && y < lastIndex
+            && ((squares[x][y] == player && squares[x + 1][y + 1] == player)
+                    || (squares[x + 1][y] == player && squares[x][y + 1] == player))
+        {
+            return 5
+        }
+        
+        return newValue
+    }
+    
+    private mutating func incrementQuadCounts(for player: Player, at location: Square) {
+        updateQuadCounts(for: player, at: location, adding: 1)
+    }
+    
+    private mutating func decrementQuadCounts(for player: Player, at location: Square) {
+        updateQuadCounts(for: player, at: location, adding: -1)
+    }
+
+    private mutating func updateQuadCounts(for player: Player, at location: Square, adding value: Int) {
+        quadCounts[player.rawValue][quadValues[player.rawValue][location.x + 1][location.y + 1]] += value
+        quadCounts[player.rawValue][quadValues[player.rawValue][location.x + 1][location.y]] += value
+        quadCounts[player.rawValue][quadValues[player.rawValue][location.x][location.y + 1]] += value
+        quadCounts[player.rawValue][quadValues[player.rawValue][location.x][location.y]] += value
+    }
+    
+    private mutating func computeQuadLocations(for player: Player, making move: Move) -> [Square] {
+        var quadLocations: [Square] = []
+
+        if abs(move.newLocation.x - move.oldLocation.x) == 1 && move.newLocation.y == move.oldLocation.y {
+            let maxRow = max(move.oldLocation.x, move.newLocation.x)
+            quadLocations = [Square(maxRow, move.oldLocation.y), Square(maxRow, move.oldLocation.y + 1)]
+        } else if move.newLocation.x == move.oldLocation.x && abs(move.newLocation.y - move.oldLocation.y) == 1 {
+            let maxCol = max(move.oldLocation.y, move.newLocation.y)
+            quadLocations = [Square(move.oldLocation.x, maxCol), Square(move.oldLocation.x + 1, maxCol)]
+        }
+
+        for location in quadLocations {
+            quadCounts[player.rawValue][quadValues[player.rawValue][location.x][location.y]] += 1
+        }
+
+        return quadLocations
+    }
+    
     // MARK: - Objects
     
-    enum Player {
-        case none, player, opponent
+    enum Player: Int {
+        case none = -1, player = 0, opponent = 1
     }
     
     struct Piece: Identifiable, Hashable {

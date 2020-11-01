@@ -16,8 +16,8 @@ struct Agent {
     private var bestMove: Move?
     private var moveValues: [Int : [Int : Double]]
     
-    init() {
-        moveValues = Agent.computeMoveValues()
+    init(boardSize: Int) {
+        moveValues = Agent.computeMoveValues(for: boardSize)
     }
     
     mutating func move(board: GameBoard) -> Move? {
@@ -32,7 +32,7 @@ struct Agent {
     {
         let winner = board.determineWinner()
         if winner != nil || depth == 0 {
-            return value(of: board, for: board.inactivePlayer, winner: winner)
+            return value(of: board, for: board.inactivePlayer, at: depth, winner: winner)
         }
         
         var value: Double
@@ -76,32 +76,51 @@ struct Agent {
     
     // MARK: - State Evaluation
     
-    private func value(of board: GameBoard, for player: Player, winner: Player?) -> Double {
+    private func value(of board: GameBoard, for player: Player, at depth: Int, winner: Player?) -> Double {
         if winner != nil {
-            return winner == player ? .infinity : -.infinity
+            return (winner == player ? .infinity : -.infinity) / Double(depth + 1)
         }
         
         let pieces = board.pieces(for: player)
+        let pieceCount = pieces.count
         
         // concentration
-        let centerX = pieces.map { $0.location.x }.reduce(0, +) / pieces.count
-        let centerY = pieces.map { $0.location.y }.reduce(0, +) / pieces.count
-        let sumOfDistances = pieces.map { min(abs($0.location.x - centerX), abs($0.location.y - centerY)) }.reduce(0, +)
-        let surplusOfDistances = sumOfDistances - Agent.minSumOfDistances[pieces.count]!
+        let centerX = pieces.map { $0.location.x }.reduce(0, +) / pieceCount
+        let centerY = pieces.map { $0.location.y }.reduce(0, +) / pieceCount
+        let sumOfDistances = pieces.map { max(abs($0.location.x - centerX), abs($0.location.y - centerY)) }.reduce(0, +)
+        let surplusOfDistances = sumOfDistances - Agent.minSumOfDistances[pieceCount]!
         let concentration = 1 / Double(max(1, surplusOfDistances))
         
         // mobility
-        let mobility = computeSumOfMoveValues(for: board) / (16 * Double(pieces.count))
+        let mobility = computeSumOfMoveValues(for: board) / Double(16 * pieceCount)
+        
+        // quads
+        var strongQuadCount: Int = 0
+        if board.size > 5 {
+            let middleIndex: Int = board.size / 2
+            
+            for i in -2...2 {
+                for j in -2...2 {
+                    let quadValue = board.quadValues[player.rawValue][middleIndex + i][middleIndex + j]
+                    if quadValue == 3 || quadValue == 4 {
+                        strongQuadCount += 1
+                    }
+                }
+            }
+        } else {
+            strongQuadCount = board.quadCounts[player.rawValue][3] + board.quadCounts[player.rawValue][4]
+        }
+        let quads = Double(strongQuadCount) / Double(Agent.maxStrongQuadCount[pieceCount]!)
         
         // centralization
         let intLocations = pieces.map { $0.location.x + $0.location.y * board.size }
-        let centralization = normalizeCentralization(intLocations.map { Agent.squareValues[$0] }.reduce(0, +),
-                                                     pieceCount: pieces.count)
+        let centralization = computeCentralization(for: intLocations)
         
         // uniformity
-        let xLocations = pieces.map { $0.location.x }.sorted()
-        let yLocations = pieces.map { $0.location.y }.sorted()
-        let uniformity = 64.0 / Double((xLocations.last! - xLocations.first!) * (yLocations.last! - yLocations.first!))
+        let xLocations = pieces.map { $0.location.x }
+        let yLocations = pieces.map { $0.location.y }
+        let area = (1 + xLocations.max()! - xLocations.min()!) * (1 + yLocations.max()! - yLocations.min()!)
+        let uniformity = 1.0 / Double(area)
         
         // connectedness
         var connections: Double = 0
@@ -112,37 +131,69 @@ struct Agent {
                 }
             }
         }
-        let connectedness = connections / Double(pieces.count)
+        connections -= Double(pieceCount)
+        let connectedness = connections / Agent.maxConnections[pieceCount]!
         
-        // to move
+        // MARK: - todo: walls
+        
+        // MARK: - todo: center of mass
+        
+        // is moving
         let isMoving: Double = player == board.activePlayer ? 1 : 0
+        
+        if concentration < 0 || concentration > 1 {
+            print("error in concentration: \(concentration)")
+        }
+        if mobility < 0 || mobility > 1 {
+            print("error in mobility: \(mobility)")
+        }
+        if quads < 0 || quads > 1 {
+            print("error in quads: \(quads)")
+        }
+        if centralization < 0 || centralization > 1 {
+            print("error in centralization: \(centralization)")
+        }
+        if uniformity < 0 || uniformity > 1 {
+            print("error in uniformity: \(uniformity)")
+        }
+        if connectedness < 0 || connectedness > 1 {
+            print("error in connectedness: \(connectedness)")
+        }
+        if isMoving < 0 || isMoving > 1 {
+            print("error in isMoving: \(isMoving)")
+        }
         
         // heuristic evaluation
         let playerHeuristic =
-            40 * concentration +
-            30 * mobility +
-            15 * centralization +
-            9 * uniformity +
+            30 * concentration +
+            25 * mobility +
+            15 * quads +
+            11 * centralization +
+            5 * uniformity +
             5 * connectedness +
+//            5 * walls +
+//            3 * centerOfMass +
             1 * isMoving
         let opponentHeuristic = player == board.activePlayer
-            ? 0 : value(of: board, for: board.activePlayer, winner: winner)
+            ? 0 : value(of: board, for: board.activePlayer, at: depth, winner: winner)
         return playerHeuristic - opponentHeuristic
     }
     
-    private func normalizeCentralization(_ value: Double, pieceCount: Int) -> Double {
-        let minSquareValues = Double(pieceCount) * Agent.squareValues.min()!
-        let maxSquareValues = Double(pieceCount) * Agent.squareValues.max()!
-        return (value - minSquareValues) / (maxSquareValues - minSquareValues)
+    private func computeCentralization(for intLocations: [Int]) -> Double {
+        let pieceCount = intLocations.count
+        let value = intLocations.map { Agent.squareValues[$0] }.reduce(0, +)
+        let minValue = Double(pieceCount) * Agent.squareValues.min()!
+        let maxValue = Double(pieceCount) * Agent.squareValues.max()!
+        return (value - minValue) / (maxValue - minValue)
     }
     
     private func computeSumOfMoveValues(for board: GameBoard) -> Double {
         var sumOfMoveValues: Double = 0
         
         for move in board.generateMoves() {
-            let fromIndex = move.piece.location.x + 8 * move.piece.location.y
-            let toIndex = move.newLocation.x + 8 * move.newLocation.y
-            sumOfMoveValues += moveValues[fromIndex]![toIndex]! * (board.pieceAt(move.newLocation) != nil ? 2 : 1)
+            let fromIndex = move.piece.location.x + board.size * move.piece.location.y
+            let toIndex = move.newLocation.x + board.size * move.newLocation.y
+            sumOfMoveValues += moveValues[fromIndex]![toIndex]! * (move.capturedPiece ? 2 : 1)
         }
         
         return sumOfMoveValues
@@ -167,6 +218,22 @@ struct Agent {
         12: 14
     ]
     
+    private static let maxStrongQuadCount: [Int : Int] = [
+        0: 0,
+        1: 0,
+        2: 0,
+        3: 1,
+        4: 2,
+        5: 4,
+        6: 4,
+        7: 5,
+        8: 6,
+        9: 8,
+        10: 8,
+        11: 9,
+        12: 10
+    ]
+    
     private static let squareValues: [Double] = [
         -80, -25, -20, -20, -20, -20, -25, -80,
         -25,  10,  10,  10,  10,  10,  10, -25,
@@ -178,18 +245,35 @@ struct Agent {
         -80, -25, -20, -20, -20, -20, -25, -80
     ]
     
-    private static func computeMoveValues() -> [Int : [Int : Double]] {
+    private static let maxConnections: [Int : Double] = [
+        1: 0,
+        2: 2,
+        3: 6,
+        4: 12,
+        5: 16,
+        6: 22,
+        7: 28,
+        8: 34,
+        9: 40,
+        10: 46,
+        11: 52,
+        12: 58
+    ]
+    
+    private static func computeMoveValues(for size: Int) -> [Int : [Int : Double]] {
+        let lastIndex = size - 1
         var edges: [Int] = []
-        for i in 0..<8 {
-            edges += [i, 56 + i, i * 8, i * 8 + 7]
+        var moveValues = [Int : [Int : Double]]()
+        
+        for i in 0..<size {
+            edges += [i, i + (size * lastIndex), i * size, i * size + lastIndex]
         }
         edges = Array(Set(edges))
         
-        var moveValues = [Int : [Int : Double]]()
-        for i in 0..<64 {
+        for i in 0 ..< size * size {
             var cellValues = [Int : Double]()
 
-            for j in 0..<64 {
+            for j in 0 ..< size * size {
                 if edges.contains(j) {
                     cellValues[j] = edges.contains(i) ? 0.25 : 0.5
                 } else {

@@ -51,7 +51,7 @@ struct Game: View {
                                     .disabled(!viewModel.canStepBackward)
                                 GameButton(icon: "arrowtriangle.right") { viewModel.stepForward() }
                                     .disabled(!viewModel.canStepForward)
-                                GameButton("Best Move") {}
+//                                GameButton("Best Move") {}
                             }
                             .disabled(viewModel.gameMode != .analysis)
                         }

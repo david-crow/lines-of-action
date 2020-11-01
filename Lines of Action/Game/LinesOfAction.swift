@@ -134,14 +134,14 @@ class LinesOfAction: ObservableObject {
     
     func stepBackward() {
         if moveCounter >= 0 {
-            board.undo(moves[moveCounter])
+            board.stepBackward(to: moves[moveCounter])
             moveCounter -= 1
         }
     }
     
     func stepForward() {
         if moveCounter < moves.count - 1 {
-            board.redo(moves[moveCounter + 1])
+            board.stepForward(to: moves[moveCounter + 1])
             moveCounter += 1
         }
     }
