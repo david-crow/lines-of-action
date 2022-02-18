@@ -18,7 +18,8 @@ struct Board: View {
                     ForEach(0..<viewModel.boardSize) { row in
                         HStack(spacing: 0) {
                             ForEach(0..<viewModel.boardSize) { col in
-                                Square(col, row, size: geometry.size).environmentObject(viewModel)
+                                Square(col, row, size: geometry.size)
+                                    .environmentObject(viewModel)
                             }
                         }
                     }

@@ -141,28 +141,6 @@ struct Agent {
         // is moving
         let isMoving: Double = player == board.activePlayer ? 1 : 0
         
-        if concentration < 0 || concentration > 1 {
-            print("error in concentration: \(concentration)")
-        }
-        if mobility < 0 || mobility > 1 {
-            print("error in mobility: \(mobility)")
-        }
-        if quads < 0 || quads > 1 {
-            print("error in quads: \(quads)")
-        }
-        if centralization < 0 || centralization > 1 {
-            print("error in centralization: \(centralization)")
-        }
-        if uniformity < 0 || uniformity > 1 {
-            print("error in uniformity: \(uniformity)")
-        }
-        if connectedness < 0 || connectedness > 1 {
-            print("error in connectedness: \(connectedness)")
-        }
-        if isMoving < 0 || isMoving > 1 {
-            print("error in isMoving: \(isMoving)")
-        }
-        
         // heuristic evaluation
         let playerHeuristic =
             30 * concentration +
@@ -171,8 +149,8 @@ struct Agent {
             11 * centralization +
             5 * uniformity +
             5 * connectedness +
-//            5 * walls +
-//            3 * centerOfMass +
+            5 * walls +
+            3 * centerOfMass +
             1 * isMoving
         let opponentHeuristic = player == board.activePlayer
             ? 0 : value(of: board, for: board.activePlayer, at: depth, winner: winner)

@@ -43,7 +43,7 @@ struct Home: View {
                     NavigationButton(label: "How to Play")
                 }
                 
-                NavigationLink(destination: EmptyView().navigationBarTitle("todo", displayMode: .inline)) {
+                NavigationLink(destination: EmptyView().navigationBarTitle("", displayMode: .inline)) {
                     NavigationButton(label: "Settings")
                 }
             }

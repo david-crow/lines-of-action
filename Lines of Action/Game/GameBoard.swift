@@ -404,17 +404,12 @@ struct GameBoard {
     
     private func incrementedQuadValue(for player: Player, at location: Square, currentValue: Int) -> Int {
         let newValue = currentValue + 1
-        let x = location.x
-        let y = location.y
         
         if newValue == 6 {
             return 3
         }
         
-        if newValue == 2 && x >= 0 && y >= 0 && x < lastIndex && y < lastIndex
-            && ((squares[x][y] == player && squares[x + 1][y + 1] == player)
-                    || (squares[x + 1][y] == player && squares[x][y + 1] == player))
-        {
+        if quadIsDiagonal(for: player, at: location, quadValue: newValue) {
             return 5
         }
         
@@ -423,21 +418,25 @@ struct GameBoard {
     
     private func decrementedQuadValue(for player: Player, at location: Square, currentValue: Int) -> Int {
         let newValue = currentValue - 1
-        let x = location.x
-        let y = location.y
         
         if newValue == 4 {
             return 1
         }
         
-        if newValue == 2 && x >= 0 && y >= 0 && x < lastIndex && y < lastIndex
-            && ((squares[x][y] == player && squares[x + 1][y + 1] == player)
-                    || (squares[x + 1][y] == player && squares[x][y + 1] == player))
-        {
+        if quadIsDiagonal(for: player, at: location, quadValue: newValue) {
             return 5
         }
         
         return newValue
+    }
+    
+    private func quadIsDiagonal(for player: Player, at location: Square, quadValue: Int) -> Bool {
+        let x = location.x
+        let y = location.y
+        
+        return quadValue == 2 && x >= 0 && y >= 0 && x < lastIndex && y < lastIndex
+            && ((squares[x][y] == player && squares[x + 1][y + 1] == player)
+                    || (squares[x + 1][y] == player && squares[x][y + 1] == player))
     }
     
     private mutating func incrementQuadCounts(for player: Player, at location: Square) {
